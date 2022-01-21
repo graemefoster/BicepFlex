@@ -5,9 +5,11 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using BicepFlex;
 using BicepRunner;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using BicepOutput = BicepFlex.BicepOutput;
 
 var bicepPath = args[0];
 var bicepOutputPath = args[1];
@@ -142,26 +144,29 @@ static IEnumerable<BicepOutput> GetOutputs(string[] contents)
     }
 }
 
-internal class BicepParameter
+namespace BicepFlex
 {
-    public BicepParameter(string name, string bicepType)
+    internal class BicepParameter
     {
-        Name = name;
-        BicepType = bicepType;
+        public BicepParameter(string name, string bicepType)
+        {
+            Name = name;
+            BicepType = bicepType;
+        }
+
+        public string Name { get; set; }
+        public string BicepType { get; set; }
     }
 
-    public string Name { get; set; }
-    public string BicepType { get; set; }
-}
-
-internal class BicepOutput
-{
-    public BicepOutput(string name, string bicepType)
+    internal class BicepOutput
     {
-        Name = name;
-        BicepType = bicepType;
-    }
+        public BicepOutput(string name, string bicepType)
+        {
+            Name = name;
+            BicepType = bicepType;
+        }
 
-    public string Name { get; set; }
-    public string BicepType { get; set; }
+        public string Name { get; set; }
+        public string BicepType { get; set; }
+    }
 }

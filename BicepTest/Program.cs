@@ -1,13 +1,15 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using AzBicepRunner;
+using BicepRunner;
 using BicepRunner.Samples;
 using Newtonsoft.Json;
 
-var runner = new AzBicepRunner("testy", @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
+var runner = new AzBicepRunner.AzBicepRunner("testy", @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
 
 var stack = new Stack()
 {
-    ComplexOne =  new SampleComplexObject()
+    ComplexOne = new SampleComplexObject()
     {
         Property1 = "Hello World!",
         Property2 = 78
@@ -15,21 +17,27 @@ var stack = new Stack()
     Two = "HELLO"
 };
 
-var bicepFile = new SingleParam();
-bicepFile.Name = "Graeme";
-bicepFile.Complex = stack.ComplexOne;
+var bicepFile = new SingleParam
+{
+    Name = "Graeme",
+    Complex = stack.ComplexOne
+};
 
 var output =
     await runner
-        .ExecuteTemplate(bicepFile, o => o)
+        .ExecuteTemplate(
+            bicepFile,
+            o => o,
+            bicepFile,
+            o => o)
         .ThenDeploy(o => new SingleParam()
         {
-            Name = o.Nameout,
+            Name = o.Item1.Nameout,
             Complex = new SampleComplexObject()
             {
                 Property1 = "ASASASs",
                 Property2 = 123
             }
-        }, o => o);
+        });
 
-Console.WriteLine(JsonConvert.SerializeObject(output.Output));
+Console.WriteLine(JsonConvert.SerializeObject(output));

@@ -8,6 +8,8 @@ using Azure.ResourceManager.Resources.Models;
 using BicepRunner;
 using Newtonsoft.Json;
 
+namespace AzBicepRunner;
+
 public class AzBicepRunner : IBicepRunner
 {
     private readonly ArmClient _armClient;
@@ -30,10 +32,10 @@ public class AzBicepRunner : IBicepRunner
     public async Task<INextStep<Tuple<TState1, TState2, TState3>>> ExecuteTemplate<T1, T2, T3, TState1, TState2,
         TState3>(
         BicepTemplate<T1> template1,
-        BicepTemplate<T2> template2,
-        BicepTemplate<T3> template3,
         Func<T1, TState1> state1Generator,
+        BicepTemplate<T2> template2,
         Func<T2, TState2> state2Generator,
+        BicepTemplate<T3> template3,
         Func<T3, TState3> state3Generator
     )
         where T1 : BicepOutput
@@ -54,9 +56,11 @@ public class AzBicepRunner : IBicepRunner
 
     public async Task<INextStep<Tuple<TState1, TState2>>> ExecuteTemplate<T1, T2, TState1, TState2>(
         BicepTemplate<T1> template1,
-        BicepTemplate<T2> template2,
         Func<T1, TState1> state1Generator,
-        Func<T2, TState2> state2Generator) where T1 : BicepOutput where T2 : BicepOutput
+        BicepTemplate<T2> template2,
+        Func<T2, TState2> state2Generator)
+        where T1 : BicepOutput
+        where T2 : BicepOutput
     {
         var task1 = ExecuteTemplate(template1);
         var task2 = ExecuteTemplate(template2);
@@ -118,36 +122,5 @@ public class AzBicepRunner : IBicepRunner
         {
             File.Delete(temp);
         }
-    }
-}
-
-public class AzNextStepRunner<TState> : INextStep<TState>
-{
-    private readonly TState _output;
-    private readonly IBicepRunner _runner;
-
-    public AzNextStepRunner(TState output, IBicepRunner runner)
-    {
-        _output = output;
-        _runner = runner;
-    }
-
-    public TState Output => _output;
-
-    public Task<INextStep<TNextState>> ThenDeploy<T1, TNextState>(Func<TState, BicepTemplate<T1>> template,
-        Func<T1, TNextState> stateGenerator) where T1 : BicepOutput
-    {
-        return _runner.ExecuteTemplate(template(_output), stateGenerator);
-    }
-}
-
-public static class RunnerEx
-{
-    public static async Task<INextStep<TNextState>> ThenDeploy<T1, TState, TNextState>(
-        this Task<INextStep<TState>> obj,
-        Func<TState, BicepTemplate<T1>> template,
-        Func<T1, TNextState> stateGenerator) where T1 : BicepOutput
-    {
-        return await (await obj).ThenDeploy(template, stateGenerator);
     }
 }
