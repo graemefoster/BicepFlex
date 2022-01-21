@@ -47,7 +47,7 @@ public {x.BicepType} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} se
         public {x.BicepType} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
 
         public {pascalCaseName}Output(Dictionary<string, object> outputs) {{
-            {string.Join(Environment.NewLine, outputs.Select(x => @$" this._{x.Name} = ({x.BicepType})((Dictionary<string, object>)outputs[""{x.Name}""])[""value""];"))}
+            base.SetProperties(outputs);
         }}
     }}
 
@@ -106,29 +106,39 @@ static string PascalCase(string fileName)
 
 static IEnumerable<BicepParameter> GetParameters(string[] contents)
 {
-    var bicepParameterRegex = new Regex(@"^\s*param\s+(.*?)\s+(.*?)\s*$");
+    var bicepParameterRegex = new Regex(@"^\s*param\s+([A-Za-z]*?)\s+([A-Za-z]*?)(\s*|\s+.*?)$");
+    var bicepTypeRegex = new Regex(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9\.]*)(\s*|(\s+.*?))$");
     foreach (var line in contents)
     {
         var match = bicepParameterRegex.Match(line);
         if (match.Success)
+        {
+            var typeMatch = bicepTypeRegex.Match(line);
             yield return new BicepParameter(
                 match.Groups[1].Value,
-                match.Groups[2].Value
+                match.Groups[2].Value != "object" ? match.Groups[2].Value :
+                typeMatch.Success ? typeMatch.Groups[1].Value : "object"
             );
+        }
     }
 }
 
 static IEnumerable<BicepOutput> GetOutputs(string[] contents)
 {
     var bicepParameterRegex = new Regex(@"^\s*output\s+(.*?)\s+(.*?)\s*\=.*?");
+    var bicepTypeRegex = new Regex(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9\.]*)(\s*|(\s+.*?))$");
     foreach (var line in contents)
     {
         var match = bicepParameterRegex.Match(line);
         if (match.Success)
+        {
+            var typeMatch = bicepTypeRegex.Match(line);
             yield return new BicepOutput(
                 match.Groups[1].Value,
-                match.Groups[2].Value
+                match.Groups[2].Value != "object" ? match.Groups[2].Value :
+                typeMatch.Success ? typeMatch.Groups[1].Value : "object"
             );
+        }
     }
 }
 
