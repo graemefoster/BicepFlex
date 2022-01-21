@@ -2,5 +2,6 @@ namespace BicepRunner;
 
 public interface IBicepRunner
 {
-    Task<T> ExecuteTemplate<T>(BicepTemplate<T> template) where T : BicepOutput;
+    Task<INextStep<TState>> ExecuteTemplate<T, TState>(BicepTemplate<T> template, Func<T, TState> stateGenerator)
+        where T : BicepOutput;
 }

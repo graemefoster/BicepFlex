@@ -2,8 +2,10 @@
 
 namespace BicepRunner;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class BicepOutput
 {
+    // ReSharper disable once UnusedMember.Global
     protected void SetProperties(Dictionary<string, object> armOutputs)
     {
         foreach (var output in armOutputs)

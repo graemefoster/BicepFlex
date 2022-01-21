@@ -4,15 +4,32 @@ using BicepRunner.Samples;
 using Newtonsoft.Json;
 
 var runner = new AzBicepRunner("testy", @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
-var bicepFile = new SingleParam();
-bicepFile.Name = "Graeme";
-bicepFile.Complex = new SampleComplexObject()
+
+var stack = new Stack()
 {
-    Property1 = "Hello World!",
-    Property2 = 78
+    ComplexOne =  new SampleComplexObject()
+    {
+        Property1 = "Hello World!",
+        Property2 = 78
+    },
+    Two = "HELLO"
 };
 
-var output = await runner.ExecuteTemplate(bicepFile);
+var bicepFile = new SingleParam();
+bicepFile.Name = "Graeme";
+bicepFile.Complex = stack.ComplexOne;
 
-Console.WriteLine(JsonConvert.SerializeObject(output));
+var output =
+    await runner
+        .ExecuteTemplate(bicepFile, o => o)
+        .ThenDeploy(o => new SingleParam()
+        {
+            Name = o.Nameout,
+            Complex = new SampleComplexObject()
+            {
+                Property1 = "ASASASs",
+                Property2 = 123
+            }
+        }, o => o);
 
+Console.WriteLine(JsonConvert.SerializeObject(output.Output));
