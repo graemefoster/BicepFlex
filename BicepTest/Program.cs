@@ -20,7 +20,9 @@ var stack = new Stack()
 var bicepFile = new SingleParam
 {
     Name = "Graeme",
-    Complex = stack.ComplexOne
+    Complex = stack.ComplexOne,
+    Names = Array.Empty<SampleComplexObject>(),
+    Names2 = Array.Empty<object>()
 };
 
 var output =

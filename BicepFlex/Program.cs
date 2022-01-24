@@ -40,13 +40,14 @@ public class {pascalCaseName} : BicepTemplate<{pascalCaseName}.{pascalCaseName}O
     public override string FileHash => ""{Convert.ToBase64String(contentsHash)}"";
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
-private {x.BicepType} _{x.Name};
-public {x.BicepType} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
+private {x.DotNetTypeName()} _{x.Name};
+public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
 
     public class {pascalCaseName}Output : BicepOutput {{
         {string.Join(Environment.NewLine, outputs.Select(x => @$"
-        private {x.BicepType} _{x.Name};
-        public {x.BicepType} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
+
+        private {x.DotNetTypeName()} _{x.Name};
+        public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
 
         public {pascalCaseName}Output(Dictionary<string, object> outputs) {{
             base.SetProperties(outputs);
@@ -108,7 +109,7 @@ static string PascalCase(string fileName)
 
 static IEnumerable<BicepParameter> GetParameters(string[] contents)
 {
-    var bicepParameterRegex = new Regex(@"^\s*param\s+([A-Za-z]*?)\s+([A-Za-z]*?)(\s*|\s+.*?)$");
+    var bicepParameterRegex = new Regex(@"^\s*param\s+([A-Za-z0-9]*?)\s+([A-Za-z0-9]*?)(\s*|\s+.*?)$");
     var bicepTypeRegex = new Regex(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9\.]*)(\s*|(\s+.*?))$");
     foreach (var line in contents)
     {
@@ -118,8 +119,8 @@ static IEnumerable<BicepParameter> GetParameters(string[] contents)
             var typeMatch = bicepTypeRegex.Match(line);
             yield return new BicepParameter(
                 match.Groups[1].Value,
-                match.Groups[2].Value != "object" ? match.Groups[2].Value :
-                typeMatch.Success ? typeMatch.Groups[1].Value : "object"
+                match.Groups[2].Value,
+                typeMatch.Success ? typeMatch.Groups[1].Value : null
             );
         }
     }
@@ -137,8 +138,8 @@ static IEnumerable<BicepOutput> GetOutputs(string[] contents)
             var typeMatch = bicepTypeRegex.Match(line);
             yield return new BicepOutput(
                 match.Groups[1].Value,
-                match.Groups[2].Value != "object" ? match.Groups[2].Value :
-                typeMatch.Success ? typeMatch.Groups[1].Value : "object"
+                match.Groups[2].Value,
+                typeMatch.Success ? typeMatch.Groups[1].Value : null
             );
         }
     }
@@ -148,25 +149,61 @@ namespace BicepFlex
 {
     internal class BicepParameter
     {
-        public BicepParameter(string name, string bicepType)
+        public BicepParameter(string name, string bicepType, string? customType)
         {
             Name = name;
             BicepType = bicepType;
+            CustomType = customType;
         }
 
         public string Name { get; set; }
         public string BicepType { get; set; }
+        
+        public string? CustomType { get; set; }
+        
+        public string DotNetTypeName()
+        {
+            if (CustomType == null)
+            {
+                return BicepType == "array" ? "System.Array" : BicepType;
+            }
+
+            if (BicepType == "array")
+            {
+                return $"{CustomType}[]";
+            }
+
+            return CustomType;
+        }
     }
 
     internal class BicepOutput
     {
-        public BicepOutput(string name, string bicepType)
+        public BicepOutput(string name, string bicepType, string? customType)
         {
             Name = name;
             BicepType = bicepType;
+            CustomType = customType;
         }
 
         public string Name { get; set; }
         public string BicepType { get; set; }
+        public string? CustomType { get; set; }
+        
+        public string DotNetTypeName()
+        {
+            if (CustomType == null)
+            {
+                return BicepType;
+            }
+
+            if (BicepType == "array")
+            {
+                return $"{CustomType}[]";
+            }
+
+            return CustomType;
+        }
+
     }
 }
