@@ -4,12 +4,10 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using BicepFlex;
 using BicepRunner;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using BicepOutput = BicepFlex.BicepOutput;
 
 var bicepPath = args[0];
 var bicepOutputPath = args[1];
@@ -19,16 +17,18 @@ foreach (var file in Directory.GetFiles(bicepPath, "*.bicep", SearchOption.AllDi
 
 static Task GenerateBicepWrapper(string fileName, string outputPath, string[] contents)
 {
-    var inputs = GetParameters(contents).ToArray();
-    var outputs = GetOutputs(contents).ToArray();
+    var meta = new BicepFileParser().Parse(contents);
+    var inputs = meta.Parameters;
+    var outputs = meta.Outputs;
     GenerateAssembly(fileName, outputPath,
         SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, contents))), inputs,
         outputs);
     return Task.CompletedTask;
 }
 
-static void GenerateAssembly(string fileName, string outputPath, byte[] contentsHash, BicepParameter[] inputs,
-    BicepOutput[] outputs)
+static void GenerateAssembly(string fileName, string outputPath, byte[] contentsHash, 
+    IEnumerable<BicepParameterToken> inputs,
+    IEnumerable<BicepOutputToken> outputs)
 {
     var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(fileName));
     var classTemplate = @$"using BicepRunner;
@@ -105,105 +105,4 @@ static string PascalCase(string fileName)
     return info.ToTitleCase(fileName)
         .Replace("-", "")
         .Replace(" ", "");
-}
-
-static IEnumerable<BicepParameter> GetParameters(string[] contents)
-{
-    var bicepParameterRegex = new Regex(@"^\s*param\s+([A-Za-z0-9]*?)\s+([A-Za-z0-9]*?)(\s*|\s+.*?)$");
-    var bicepTypeRegex = new Regex(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9\.]*)(\s*|(\s+.*?))$");
-    foreach (var line in contents)
-    {
-        var match = bicepParameterRegex.Match(line);
-        if (match.Success)
-        {
-            var typeMatch = bicepTypeRegex.Match(line);
-            yield return new BicepParameter(
-                match.Groups[1].Value,
-                match.Groups[2].Value,
-                typeMatch.Success ? typeMatch.Groups[1].Value : null
-            );
-        }
-    }
-}
-
-static IEnumerable<BicepOutput> GetOutputs(string[] contents)
-{
-    var bicepParameterRegex = new Regex(@"^\s*output\s+(.*?)\s+(.*?)\s*\=.*?");
-    var bicepTypeRegex = new Regex(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9\.]*)(\s*|(\s+.*?))$");
-    foreach (var line in contents)
-    {
-        var match = bicepParameterRegex.Match(line);
-        if (match.Success)
-        {
-            var typeMatch = bicepTypeRegex.Match(line);
-            yield return new BicepOutput(
-                match.Groups[1].Value,
-                match.Groups[2].Value,
-                typeMatch.Success ? typeMatch.Groups[1].Value : null
-            );
-        }
-    }
-}
-
-namespace BicepFlex
-{
-    internal class BicepParameter
-    {
-        public BicepParameter(string name, string bicepType, string? customType)
-        {
-            Name = name;
-            BicepType = bicepType;
-            CustomType = customType;
-        }
-
-        public string Name { get; set; }
-        public string BicepType { get; set; }
-        
-        public string? CustomType { get; set; }
-        
-        public string DotNetTypeName()
-        {
-            if (CustomType == null)
-            {
-                return BicepType == "array" ? "System.Array" : BicepType;
-            }
-
-            if (BicepType == "array")
-            {
-                return $"{CustomType}[]";
-            }
-
-            return CustomType;
-        }
-    }
-
-    internal class BicepOutput
-    {
-        public BicepOutput(string name, string bicepType, string? customType)
-        {
-            Name = name;
-            BicepType = bicepType;
-            CustomType = customType;
-        }
-
-        public string Name { get; set; }
-        public string BicepType { get; set; }
-        public string? CustomType { get; set; }
-        
-        public string DotNetTypeName()
-        {
-            if (CustomType == null)
-            {
-                return BicepType;
-            }
-
-            if (BicepType == "array")
-            {
-                return $"{CustomType}[]";
-            }
-
-            return CustomType;
-        }
-
-    }
 }

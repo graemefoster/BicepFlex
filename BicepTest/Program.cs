@@ -1,15 +1,14 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using AzBicepRunner;
 using BicepRunner;
 using BicepRunner.Samples;
 using Newtonsoft.Json;
 
 var runner = new AzBicepRunner.AzBicepRunner("testy", @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
 
-var stack = new Stack()
+var stack = new Stack
 {
-    ComplexOne = new SampleComplexObject()
+    ComplexOne = new SampleComplexObject
     {
         Property1 = "Hello World!",
         Property2 = 78
@@ -32,10 +31,10 @@ var output =
             o => o,
             bicepFile,
             o => o)
-        .ThenDeploy(o => new SingleParam()
+        .ThenDeploy(o => new SingleParam
         {
             Name = o.Item1.Nameout,
-            Complex = new SampleComplexObject()
+            Complex = new SampleComplexObject
             {
                 Property1 = "ASASASs",
                 Property2 = 123

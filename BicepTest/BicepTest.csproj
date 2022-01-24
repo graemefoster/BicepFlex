@@ -14,8 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AzBicepRunner\AzBicepRunner.csproj" />
-        <ProjectReference Include="..\BicepRunner\BicepRunner.csproj" />
+        <ProjectReference Include="..\AzBicepRunner\AzBicepRunner.csproj"/>
+        <ProjectReference Include="..\BicepRunner\BicepRunner.csproj"/>
     </ItemGroup>
 
 </Project>

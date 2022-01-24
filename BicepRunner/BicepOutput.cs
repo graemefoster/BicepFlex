@@ -10,7 +10,7 @@ public class BicepOutput
     {
         foreach (var output in armOutputs)
         {
-            var field = this.GetType().GetField($"_{output.Key}", BindingFlags.Instance | BindingFlags.NonPublic);
+            var field = GetType().GetField($"_{output.Key}", BindingFlags.Instance | BindingFlags.NonPublic);
             if (field != null)
             {
                 var val = (Dictionary<string, object>)output.Value;
@@ -21,10 +21,7 @@ public class BicepOutput
                     {
                         var complexProperty =
                             field.FieldType.GetProperty(property.Key, BindingFlags.Instance | BindingFlags.Public);
-                        if (complexProperty != null)
-                        {
-                            complexProperty.SetValue(complexObject, property.Value);
-                        }
+                        if (complexProperty != null) complexProperty.SetValue(complexObject, property.Value);
                     }
 
                     field.SetValue(this, complexObject);

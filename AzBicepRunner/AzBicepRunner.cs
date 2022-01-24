@@ -13,8 +13,8 @@ namespace AzBicepRunner;
 public class AzBicepRunner : IBicepRunner
 {
     private readonly ArmClient _armClient;
-    private readonly string _resourceGroup;
     private readonly string _bicepRoot;
+    private readonly string _resourceGroup;
 
     public AzBicepRunner(string resourceGroup, string bicepRoot)
     {
@@ -91,10 +91,7 @@ public class AzBicepRunner : IBicepRunner
             p.ErrorDataReceived += (sender, args) => Console.WriteLine(args.Data);
 
             await p.WaitForExitAsync();
-            if (p.ExitCode != 0)
-            {
-                throw new InvalidOperationException("Failed to execute az");
-            }
+            if (p.ExitCode != 0) throw new InvalidOperationException("Failed to execute az");
 
             var json = await File.ReadAllTextAsync(temp, Encoding.UTF8);
 
