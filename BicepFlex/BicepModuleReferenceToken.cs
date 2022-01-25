@@ -5,7 +5,7 @@ namespace BicepFlex;
 public class BicepModuleReferenceToken : BicepToken
 {
     private static readonly Regex regex = new(@"^\s*module\s+([A-Za-z0-9_]*)\s+\'([A-Za-z0-9_\.\/\-]*)\'");
-    private static readonly Regex referenceRegex = new(@"^\s+([A-Za-z0-9_]*)\s*\:\s*([A-Za-z0-9_\.]*)\s*$");
+    private static readonly Regex referenceRegex = new(@"^\s+([A-Za-z0-9_]*)\s*\:\s*([A-Za-z0-9_]*)\s*$");
 
     private BicepModuleReferenceToken(string variableName, string modulePath, List<(string, string)> parameters)
     {
