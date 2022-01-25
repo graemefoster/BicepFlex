@@ -18,7 +18,7 @@ public class BicepFileParser
 
     private BicepToken? NextToken(IEnumerator<string> fileReader)
     {
-        var more = false;
+        bool more;
         do
         {
             if (BicepParameterToken.TryParse(fileReader, out var token)) return token;

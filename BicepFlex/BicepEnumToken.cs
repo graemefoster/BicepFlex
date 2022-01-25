@@ -1,17 +1,38 @@
+using System.Text.RegularExpressions;
+
 namespace BicepFlex;
 
 public class BicepEnumToken : BicepParameterToken
 {
+    public string[] Tokens { get; }
+
     public static bool TryParse(IEnumerator<string> reader, out BicepToken? token)
     {
+        var tokenRegex = new Regex(@"^\s*'(.*)'\s*$");
         var line = reader.Current;
         if (line.Contains("@allowed(["))
         {
+            var tokens = new List<string>();
+            if (reader.MoveNext())
+            {
+                var canRead = true;
+                do
+                {
+                    if (reader.Current.Contains("])")) break;
+                    var enumMatch = tokenRegex.Match(reader.Current);
+                    tokens.Add(enumMatch.Groups[1].Value);
+                    canRead = reader.MoveNext();
+                } while (canRead);
+            }
+            else
+            {
+                throw new InvalidOperationException("Failed to read enum");
+            }
 
+            reader.MoveNext();
             if (BicepParameterToken.TryParse(reader, out var parameterToken))
             {
-                //grab the values up to the parameter part
-                token = new BicepEnumToken(parameterToken.Name, parameterToken.BicepType, parameterToken.CustomType);
+                token = new BicepEnumToken(parameterToken.Name, tokens.ToArray());
                 return true;
             }
 
@@ -23,7 +44,8 @@ public class BicepEnumToken : BicepParameterToken
         return false;
     }
 
-    public BicepEnumToken(string name, string bicepType, string? customType) : base(name, bicepType, customType)
+    public BicepEnumToken(string name, string[] tokens) : base(name, "string", $"{name}Options")
     {
+        Tokens = tokens;
     }
 }

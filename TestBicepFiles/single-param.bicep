@@ -3,6 +3,12 @@ param complex object //@bicepflextype BicepRunner.Samples.SampleComplexObject
 param names array //@bicepflextype BicepRunner.Samples.SampleComplexObject
 param names2 array
 
+@allowed([
+  'rain'
+  'hail'
+])
+param weatherType string
+
 output nameout string = name
 
 output strongtype object = { //@bicepflextype BicepRunner.Samples.SampleComplexObjectOutput

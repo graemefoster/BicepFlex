@@ -34,6 +34,7 @@ var output =
         .ThenDeploy(o => new SingleParam
         {
             Name = o.Item1.Nameout,
+            Weathertype = weatherTypeOptions.hail,
             Complex = new SampleComplexObject
             {
                 Property1 = "ASASASs",

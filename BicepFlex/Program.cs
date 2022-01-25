@@ -35,6 +35,12 @@ static void GenerateAssembly(string fileName, string outputPath, byte[] contents
 using System.Reflection;
 using System.Collections.Generic;
 
+{string.Join(Environment.NewLine, inputs.OfType<BicepEnumToken>().Select(et => $@"
+public enum {et.Name}Options {{
+    {string.Join(Environment.NewLine, et.Tokens.Select(etv => $"{etv},"))}
+}}
+"))}
+
 public class {pascalCaseName} : BicepTemplate<{pascalCaseName}.{pascalCaseName}Output> {{
     public override string FileName => ""{fileName}"";
     public override string FileHash => ""{Convert.ToBase64String(contentsHash)}"";
