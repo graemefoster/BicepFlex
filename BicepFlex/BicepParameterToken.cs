@@ -16,7 +16,6 @@ public class BicepParameterToken : BicepToken
         CustomType = customType;
     }
 
-    public string Name { get; set; }
     public string BicepType { get; set; }
     public string? CustomType { get; set; }
 

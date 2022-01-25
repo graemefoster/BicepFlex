@@ -1,10 +1,18 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace BicepFlex;
 
 public class BicepFileParser
 {
-    public BicepMetaFile Parse(string[] fileContents)
+    public BicepMetaFile Parse(string fileName, string[] fileContents)
     {
-        return new BicepMetaFile(GetTokens(fileContents.AsEnumerable()));
+        return new BicepMetaFile(
+            Path.GetFileNameWithoutExtension(fileName), 
+            SHA512.Create().ComputeHash(
+                Encoding.UTF8.GetBytes(
+                    string.Join(Environment.NewLine, fileContents))),
+            GetTokens(fileContents.AsEnumerable()));
     }
 
     private IEnumerable<BicepToken> GetTokens(IEnumerable<string> lines)
@@ -30,5 +38,14 @@ public class BicepFileParser
         } while (more);
 
         return null;
+    }
+
+    public void PostProcess(IEnumerable<BicepMetaFile> files)
+    {
+        var again = true;
+        while (again)
+        {
+            again = files.Any(x => x.PostProcess(files));
+        }
     }
 }

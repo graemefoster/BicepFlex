@@ -13,19 +13,32 @@ var bicepPath = args[0];
 var bicepOutputPath = args[1];
 
 var classes = new List<string>();
-foreach (var file in Directory.GetFiles(bicepPath, "*.bicep", SearchOption.AllDirectories))
-    classes.Add(GenerateBicepClass(Path.GetFileName(file), await File.ReadAllLinesAsync(file)));
+var parse = new BicepFileParser();
+
+var allMetaFiles = await Task.WhenAll(Directory.GetFiles(bicepPath, "*.bicep", SearchOption.AllDirectories)
+    .Select(async f => parse.Parse(f, await File.ReadAllLinesAsync(f))));
+
+var postProcess = false;
+while (!postProcess)
+{
+    postProcess = false;
+    foreach (var file in allMetaFiles)
+    {
+        if (file.PostProcess(allMetaFiles)) postProcess = true;
+    }
+}
+
+foreach (var file in allMetaFiles) {classes.Add(GenerateBicepClass(file));}
 
 GenerateAssembly(classes.ToArray(), bicepOutputPath);
 
-static string GenerateBicepClass(string fileName, string[] contents)
+static string GenerateBicepClass(BicepMetaFile file)
 {
-    var meta = new BicepFileParser().Parse(contents);
-    var inputs = meta.Parameters;
-    var outputs = meta.Outputs;
-    var contentsHash = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, contents)));
+    var inputs = file.Parameters;
+    var outputs = file.Outputs;
+    var contentsHash = file.Hash;
 
-    var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(fileName));
+    var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(file.FileName));
     var classTemplate = @$"
 {string.Join(Environment.NewLine, inputs.OfType<BicepEnumToken>().Select(et => $@"
 public enum {et.Name}Options {{
@@ -34,8 +47,8 @@ public enum {et.Name}Options {{
 "))}
 
 public class {pascalCaseName} : BicepTemplate<{pascalCaseName}.{pascalCaseName}Output> {{
-    public override string FileName => ""{fileName}"";
-    public override string FileHash => ""{Convert.ToBase64String(contentsHash)}"";
+    public override string FileName => ""{file.FileName}"";
+    public override string FileHash => ""{file.Hash}"";
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
 private {x.DotNetTypeName()} _{x.Name};
