@@ -2,5 +2,5 @@ namespace BicepFlex;
 
 public abstract class BicepToken
 {
-    public string Name { get; protected set; }
+    public string Name { get; protected set; } = default!;
 }

@@ -14,7 +14,6 @@ public class BicepOutputToken : BicepToken
         CustomType = customType;
     }
 
-    public string Name { get; set; }
     public string BicepType { get; set; }
     public string? CustomType { get; set; }
 
@@ -27,7 +26,7 @@ public class BicepOutputToken : BicepToken
         return CustomType;
     }
 
-    public static bool TryParse(IEnumerator<string> reader, out BicepToken token)
+    public static bool TryParse(IEnumerator<string> reader, out BicepOutputToken? token)
     {
         var line = reader.Current;
         var match = bicepOutputRegex.Match(line);

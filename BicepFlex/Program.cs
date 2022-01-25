@@ -38,7 +38,7 @@ static string GenerateBicepClass(BicepMetaFile file)
     var outputs = file.Outputs;
     var contentsHash = file.Hash;
 
-    var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(file.FileName));
+    var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(file.ModuleName));
     var classTemplate = @$"
 {string.Join(Environment.NewLine, inputs.OfType<BicepEnumToken>().Select(et => $@"
 public enum {et.Name}Options {{
@@ -47,7 +47,7 @@ public enum {et.Name}Options {{
 "))}
 
 public class {pascalCaseName} : BicepTemplate<{pascalCaseName}.{pascalCaseName}Output> {{
-    public override string FileName => ""{file.FileName}"";
+    public override string FileName => ""{file.ModuleName}"";
     public override string FileHash => ""{file.Hash}"";
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"

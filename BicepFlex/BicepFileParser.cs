@@ -19,7 +19,11 @@ public class BicepFileParser
     {
         var tokens = new List<BicepToken>();
         using var enumerator = lines.GetEnumerator();
-        while (enumerator.MoveNext()) tokens.Add(NextToken(enumerator));
+        while (enumerator.MoveNext())
+        {
+            var token = NextToken(enumerator);
+            if (token != null) tokens.Add(token);
+        }
 
         return tokens;
     }

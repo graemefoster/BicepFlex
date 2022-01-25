@@ -19,7 +19,7 @@ public class BicepParameterToken : BicepToken
     public string BicepType { get; set; }
     public string? CustomType { get; set; }
 
-    public static bool TryParse(IEnumerator<string> reader, out BicepParameterToken token)
+    public static bool TryParse(IEnumerator<string> reader, out BicepParameterToken? token)
     {
         var line = reader.Current;
         var match = bicepParameterRegex.Match(line);
