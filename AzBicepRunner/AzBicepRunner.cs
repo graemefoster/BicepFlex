@@ -7,6 +7,7 @@ using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
 using BicepRunner;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace AzBicepRunner;
 
@@ -109,7 +110,10 @@ public class AzBicepRunner : IBicepRunner
                 new DeploymentInput(new DeploymentProperties(DeploymentMode.Incremental)
                 {
                     Template = JsonDocument.Parse(json).RootElement,
-                    Parameters = JsonDocument.Parse(JsonConvert.SerializeObject(buildParameters)).RootElement
+                    Parameters = JsonDocument.Parse(JsonConvert.SerializeObject(buildParameters, new JsonSerializerSettings()
+                    {
+                        Converters = new [] {new StringEnumConverter()}
+                    })).RootElement
                 }));
 
             return template.BuildOutput((Dictionary<string, object>)deploymentTask.Value.Data.Properties.Outputs);
