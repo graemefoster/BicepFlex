@@ -4,8 +4,8 @@ namespace BicepFlex;
 
 public class BicepOutputToken : BicepToken
 {
-    private static Regex bicepParameterRegex = new(@"^\s*output\s+(.*?)\s+(.*?)\s*\=.*?");
-    private static Regex bicepTypeRegex = new(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9\.]*)(\s*|(\s+.*?))$");
+    private static readonly Regex bicepParameterRegex = new(@"^\s*output\s+(.*?)\s+(.*?)\s*\=.*?");
+    private static readonly Regex bicepTypeRegex = new(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9\.]*)(\s*|(\s+.*?))$");
 
     public BicepOutputToken(string name, string bicepType, string? customType)
     {
@@ -27,23 +27,22 @@ public class BicepOutputToken : BicepToken
         return CustomType;
     }
 
-public static bool TryParse(IEnumerator<string> reader, out BicepToken token)
-{
-    var line = reader.Current;
-    var match = bicepParameterRegex.Match(line);
-    if (match.Success)
+    public static bool TryParse(IEnumerator<string> reader, out BicepToken token)
     {
-        var typeMatch = bicepTypeRegex.Match(line);
-        token = new BicepParameterToken(
-            match.Groups[1].Value,
-            match.Groups[2].Value,
-            typeMatch.Success ? typeMatch.Groups[1].Value : null
-        );
-        return true;
+        var line = reader.Current;
+        var match = bicepParameterRegex.Match(line);
+        if (match.Success)
+        {
+            var typeMatch = bicepTypeRegex.Match(line);
+            token = new BicepOutputToken(
+                match.Groups[1].Value,
+                match.Groups[2].Value,
+                typeMatch.Success ? typeMatch.Groups[1].Value : null
+            );
+            return true;
+        }
+
+        token = null;
+        return false;
     }
-
-    token = null;
-    return false;
-}
-
 }

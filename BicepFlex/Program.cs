@@ -26,7 +26,7 @@ static Task GenerateBicepWrapper(string fileName, string outputPath, string[] co
     return Task.CompletedTask;
 }
 
-static void GenerateAssembly(string fileName, string outputPath, byte[] contentsHash, 
+static void GenerateAssembly(string fileName, string outputPath, byte[] contentsHash,
     IEnumerable<BicepParameterToken> inputs,
     IEnumerable<BicepOutputToken> outputs)
 {
