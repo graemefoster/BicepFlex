@@ -12,29 +12,21 @@ using Microsoft.CodeAnalysis.CSharp;
 var bicepPath = args[0];
 var bicepOutputPath = args[1];
 
+var classes = new List<string>();
 foreach (var file in Directory.GetFiles(bicepPath, "*.bicep", SearchOption.AllDirectories))
-    await GenerateBicepWrapper(Path.GetFileName(file), bicepOutputPath, await File.ReadAllLinesAsync(file));
+    classes.Add(GenerateBicepClass(Path.GetFileName(file), await File.ReadAllLinesAsync(file)));
 
-static Task GenerateBicepWrapper(string fileName, string outputPath, string[] contents)
+GenerateAssembly(classes.ToArray(), bicepOutputPath);
+
+static string GenerateBicepClass(string fileName, string[] contents)
 {
     var meta = new BicepFileParser().Parse(contents);
     var inputs = meta.Parameters;
     var outputs = meta.Outputs;
-    GenerateAssembly(fileName, outputPath,
-        SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, contents))), inputs,
-        outputs);
-    return Task.CompletedTask;
-}
+    var contentsHash = SHA512.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, contents)));
 
-static void GenerateAssembly(string fileName, string outputPath, byte[] contentsHash,
-    IEnumerable<BicepParameterToken> inputs,
-    IEnumerable<BicepOutputToken> outputs)
-{
     var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(fileName));
-    var classTemplate = @$"using BicepRunner;
-using System.Reflection;
-using System.Collections.Generic;
-
+    var classTemplate = @$"
 {string.Join(Environment.NewLine, inputs.OfType<BicepEnumToken>().Select(et => $@"
 public enum {et.Name}Options {{
     {string.Join(Environment.NewLine, et.Tokens.Select(etv => $"{etv},"))}
@@ -72,6 +64,17 @@ public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}
 }}
 ";
 
+    return classTemplate;
+}
+
+static void GenerateAssembly(string[] classTemplates, string outputPath)
+{
+    var classTemplate = string.Join(Environment.NewLine, classTemplates);
+    classTemplate = $@"using BicepRunner;
+using System.Reflection;
+using System.Collections.Generic;
+{classTemplate}";
+    
     var tree = SyntaxFactory.ParseSyntaxTree(classTemplate);
 
     var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
@@ -87,7 +90,7 @@ public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}
     var bicepRunnerReference = MetadataReference.CreateFromFile(bicepRunner);
     references.Add(bicepRunnerReference);
 
-    var compilation = CSharpCompilation.Create(fileName)
+    var compilation = CSharpCompilation.Create("BicepTypes")
         .WithOptions(
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                 nullableContextOptions: NullableContextOptions.Enable,
@@ -95,7 +98,7 @@ public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}
         .AddReferences(references)
         .AddSyntaxTrees(tree);
 
-    var path = Path.Combine(outputPath, $"{fileName}.dll");
+    var path = Path.Combine(outputPath, $"BicepTypes.dll");
     var compilationResult = compilation.Emit(path);
     if (!compilationResult.Success)
     {

@@ -9,6 +9,16 @@ param names2 array
 ])
 param weatherType string
 
+var foo = complex
+var yoo = 'complex'
+var moo = complex.Property1 + "Hello"
+
+module funkyFoo './test-module.bicep' = {
+  params: {
+    bar: foo
+  }
+}
+
 output nameout string = name
 
 output strongtype object = { //@bicepflextype BicepRunner.Samples.SampleComplexObjectOutput

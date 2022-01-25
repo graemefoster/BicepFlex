@@ -42,4 +42,6 @@ var output =
             }
         });
 
+var nextTest = new TestModule();
+
 Console.WriteLine(JsonConvert.SerializeObject(output));

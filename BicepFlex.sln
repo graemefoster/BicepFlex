@@ -5,6 +5,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestBicepFiles", "TestBicepFiles", "{8BBC20B1-0A19-4E5B-B8A9-BB6E94E8B3CF}"
 	ProjectSection(SolutionItems) = preProject
 		TestBicepFiles\single-param.bicep = TestBicepFiles\single-param.bicep
+		TestBicepFiles\test-module.bicep = TestBicepFiles\test-module.bicep
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BicepTest", "BicepTest\BicepTest.csproj", "{0DD4DEAE-E4BD-4767-8B42-C10F2822BAC8}"

@@ -4,6 +4,11 @@ namespace BicepFlex;
 
 public class BicepEnumToken : BicepParameterToken
 {
+    public BicepEnumToken(string name, string[] tokens) : base(name, "string", $"{name}Options")
+    {
+        Tokens = tokens;
+    }
+
     public string[] Tokens { get; }
 
     public static bool TryParse(IEnumerator<string> reader, out BicepToken? token)
@@ -42,10 +47,5 @@ public class BicepEnumToken : BicepParameterToken
 
         token = null;
         return false;
-    }
-
-    public BicepEnumToken(string name, string[] tokens) : base(name, "string", $"{name}Options")
-    {
-        Tokens = tokens;
     }
 }

@@ -110,10 +110,11 @@ public class AzBicepRunner : IBicepRunner
                 new DeploymentInput(new DeploymentProperties(DeploymentMode.Incremental)
                 {
                     Template = JsonDocument.Parse(json).RootElement,
-                    Parameters = JsonDocument.Parse(JsonConvert.SerializeObject(buildParameters, new JsonSerializerSettings()
-                    {
-                        Converters = new [] {new StringEnumConverter()}
-                    })).RootElement
+                    Parameters = JsonDocument.Parse(JsonConvert.SerializeObject(buildParameters,
+                        new JsonSerializerSettings
+                        {
+                            Converters = new[] { new StringEnumConverter() }
+                        })).RootElement
                 }));
 
             return template.BuildOutput((Dictionary<string, object>)deploymentTask.Value.Data.Properties.Outputs);
