@@ -4,7 +4,7 @@ public class ModuleParameter
 {
     public string Name { get; }
     public BicepExpression? Expression { get; }
-    public string? InferredType { get; private set; }
+    public string? InferredType => Expression?.InferredType;
 
     public ModuleParameter(string name, string expressionText)
     {
@@ -17,15 +17,6 @@ public class ModuleParameter
 
     public bool InferType(IEnumerable<BicepToken> tokens)
     {
-        if (InferredType != null && InferredType  != "object") return false;
-        if (Expression?.InferType(tokens, out var inferredType) ?? false)
-        {
-            if (InferredType != inferredType)
-            {
-                InferredType = inferredType;
-                return true;
-            }
-        }
-        return false;
+        return Expression?.InferType(tokens) ?? false;
     }
 }

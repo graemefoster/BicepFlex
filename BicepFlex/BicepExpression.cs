@@ -2,6 +2,7 @@ namespace BicepFlex;
 
 public abstract class BicepExpression
 {
+    public string? InferredType { get; protected set; }
     public static bool Parse(string expressionString, out BicepExpression? expression)
     {
         if (BicepReferenceExpression.TryParse(expressionString, out var expr))
@@ -14,5 +15,5 @@ public abstract class BicepExpression
         return false;
     }
 
-    public abstract bool InferType(IEnumerable<BicepToken> tokens, out string? inferredType);
+    public abstract bool InferType(IEnumerable<BicepToken> tokens);
 }

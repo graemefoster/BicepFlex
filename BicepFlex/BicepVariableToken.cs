@@ -31,17 +31,8 @@ public class BicepVariableToken : BicepToken
 
     public bool InferType(IEnumerable<BicepToken> tokens)
     {
-        if (InferredType != null && InferredType  != "object") return false;
-        if (Expression?.InferType(tokens, out var inferredType) ?? false)
-        {
-            if (InferredType != inferredType)
-            {
-                InferredType = inferredType;
-                return true;
-            }
-        }
-        return false;
+        return Expression?.InferType(tokens) ?? false;
     }
 
-    public string? InferredType { get; set; }
+    public string? InferredType => Expression?.InferredType;
 }
