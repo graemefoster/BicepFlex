@@ -3,6 +3,7 @@
 using System.Globalization;
 using System.Reflection;
 using BicepFlex;
+using BicepFlex.Tokens;
 using BicepRunner;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

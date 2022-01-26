@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace BicepFlex;
+namespace BicepFlex.Tokens;
 
 public class BicepEnumToken : BicepParameterToken
 {

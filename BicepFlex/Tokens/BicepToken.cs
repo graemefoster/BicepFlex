@@ -1,4 +1,4 @@
-namespace BicepFlex;
+namespace BicepFlex.Tokens;
 
 public abstract class BicepToken
 {

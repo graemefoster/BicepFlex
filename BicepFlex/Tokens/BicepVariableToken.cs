@@ -1,11 +1,12 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using BicepFlex.Expressions;
 
-namespace BicepFlex;
+namespace BicepFlex.Tokens;
 
 public class BicepVariableToken : BicepToken
 {
-    private static readonly Regex regex = new(@"^\s*var\s+([A-Za-z0-9_]*)\s*\=\s*([A-Za-z0-9_]*)\s*$");
+    private static readonly Regex regex = new(@"^\s*var\s+([A-Za-z0-9_]*)\s*\=\s*([A-Za-z0-9_\.]*)\s*$");
     public BicepExpression Expression { get; }
 
     public BicepVariableToken(string name, string expressionText)

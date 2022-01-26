@@ -1,13 +1,14 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using BicepFlex.Tokens;
 
-namespace BicepFlex;
+namespace BicepFlex.Expressions;
 
 public class BicepReferenceExpression : BicepExpression
 {
     private static readonly Regex Regex = new Regex(@"^\s*([A-Za-z0-9\-]*)\s*$");
 
-    private BicepReferenceExpression(string reference)
+    protected BicepReferenceExpression(string reference)
     {
         Reference = reference;
     }
@@ -32,7 +33,6 @@ public class BicepReferenceExpression : BicepExpression
     /// </summary>
     /// <param name="tokens"></param>
     /// <param name="referenceTypeAssembly"></param>
-    /// <param name="inferredType"></param>
     /// <returns></returns>
     public override bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
     {

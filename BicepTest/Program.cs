@@ -45,6 +45,6 @@ var output =
         });
 
 var nextTest = new TestModule();
-var foo = nextTest.Bar.Property1;
+var foo = nextTest.Bar;
 
 Console.WriteLine(JsonConvert.SerializeObject(output));

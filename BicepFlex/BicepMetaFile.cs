@@ -1,4 +1,5 @@
 using System.Reflection;
+using BicepFlex.Tokens;
 
 namespace BicepFlex;
 
@@ -45,7 +46,7 @@ public class BicepMetaFile
     /// Look for more specific parameter information from a file that invokes this one
     /// </summary>
     /// <param name="referencingBicepFile"></param>
-    private void InferTypes(BicepModuleReferenceToken referencingBicepFile,)
+    private void InferTypes(BicepModuleReferenceToken referencingBicepFile)
     {
         foreach (var parameter in referencingBicepFile.Parameters)
         {

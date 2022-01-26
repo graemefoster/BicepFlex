@@ -10,7 +10,7 @@ param names2 array
 param weatherType string
 
 var foo = complex
-var too = foo
+var too = foo.Property1
 var yoo = 'complex'
 var moo = complex.Property1 + "Hello"
 
