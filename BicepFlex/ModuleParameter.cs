@@ -3,34 +3,29 @@ namespace BicepFlex;
 public class ModuleParameter
 {
     public string Name { get; }
-    public string VariableOrParameterReference { get; }
+    public BicepExpression? Expression { get; }
     public string? InferredType { get; private set; }
 
-    public ModuleParameter(string name, string variableOrParameterReference)
+    public ModuleParameter(string name, string expressionText)
     {
         Name = name;
-        VariableOrParameterReference = variableOrParameterReference;
+        if (BicepExpression.Parse(expressionText, out var expr))
+        {
+            Expression = expr!;
+        }
     }
-
 
     public bool InferType(IEnumerable<BicepToken> tokens)
     {
         if (InferredType != null && InferredType  != "object") return false;
-
-        var newInferredType = InferredType;
-        var parameter = tokens.OfType<BicepParameterToken>().SingleOrDefault(x => x.Name == VariableOrParameterReference);
-        if (parameter != null)
+        if (Expression?.InferType(tokens, out var inferredType) ?? false)
         {
-            newInferredType = parameter.CustomType ?? parameter.BicepType;
+            if (InferredType != inferredType)
+            {
+                InferredType = inferredType;
+                return true;
+            }
         }
-        var variable = tokens.OfType<BicepVarVariableReferenceToken>().SingleOrDefault(x => x.Name == VariableOrParameterReference);
-        if (variable != null)
-        {
-            newInferredType = variable.InferredType;
-        }
-
-        var foundSpecificType = newInferredType != InferredType;
-        InferredType = newInferredType;
-        return foundSpecificType;
+        return false;
     }
 }

@@ -21,7 +21,7 @@ public class BicepMetaFile
     {
         var madeInferences = false;
 
-        foreach (var varToken in _tokens.OfType<BicepVarVariableReferenceToken>())
+        foreach (var varToken in _tokens.OfType<BicepVariableToken>())
         {
             if (varToken.InferType(_tokens)) madeInferences = true;
         }

@@ -36,7 +36,6 @@ static string GenerateBicepClass(BicepMetaFile file)
 {
     var inputs = file.Parameters;
     var outputs = file.Outputs;
-    var contentsHash = file.Hash;
 
     var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(file.ModuleName));
     var classTemplate = @$"
@@ -99,8 +98,10 @@ using System.Collections.Generic;
     references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Runtime.dll")));
     references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Private.CoreLib.dll")));
 
+    //Contains some core type we inherit from
     var bicepRunner = typeof(IBicepRunner).GetTypeInfo().Assembly.Location;
     var bicepRunnerReference = MetadataReference.CreateFromFile(bicepRunner);
+    
     references.Add(bicepRunnerReference);
 
     var compilation = CSharpCompilation.Create("BicepTypes")
