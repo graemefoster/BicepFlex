@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace BicepFlex;
 
 public class BicepMetaFile
@@ -17,19 +19,19 @@ public class BicepMetaFile
     public IEnumerable<BicepOutputToken> Outputs => _tokens.OfType<BicepOutputToken>();
     public string Hash { get; }
 
-    public bool PostProcess(IEnumerable<BicepMetaFile> files)
+    public bool InferTypes(IEnumerable<BicepMetaFile> files, Assembly referenceTypeAssembly)
     {
         var madeInferences = false;
 
         foreach (var varToken in _tokens.OfType<BicepVariableToken>())
         {
-            if (varToken.InferType(_tokens)) madeInferences = true;
+            if (varToken.InferType(_tokens, referenceTypeAssembly)) madeInferences = true;
         }
 
         //Look for inputs of type object and see if we can work out what the parameter type should be:
         foreach (var moduleReference in _tokens.OfType<BicepModuleReferenceToken>())
         {
-            if (moduleReference.InferType(_tokens))
+            if (moduleReference.InferType(_tokens, referenceTypeAssembly))
             {
                 var module = files.Single(x => x.ModuleName == Path.GetFileNameWithoutExtension(moduleReference.ModulePath));
                 module.InferTypes(moduleReference);
@@ -43,7 +45,7 @@ public class BicepMetaFile
     /// Look for more specific parameter information from a file that invokes this one
     /// </summary>
     /// <param name="referencingBicepFile"></param>
-    private void InferTypes(BicepModuleReferenceToken referencingBicepFile)
+    private void InferTypes(BicepModuleReferenceToken referencingBicepFile,)
     {
         foreach (var parameter in referencingBicepFile.Parameters)
         {

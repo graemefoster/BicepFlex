@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace BicepFlex;
@@ -57,13 +58,14 @@ public class BicepModuleReferenceToken : BicepToken
     /// See if anyone else can tell us what types these are?
     /// </summary>
     /// <param name="tokens"></param>
+    /// <param name="referenceTypeAssembly"></param>
     /// <exception cref="NotImplementedException"></exception>
-    public bool InferType(IEnumerable<BicepToken> tokens)
+    public bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
     {
         var madeInferences = false;
         foreach (var parameter in Parameters)
         {
-            if (parameter.InferType(tokens))
+            if (parameter.InferType(tokens, referenceTypeAssembly))
             {
                 madeInferences = true;
             }

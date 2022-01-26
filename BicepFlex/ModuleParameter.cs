@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace BicepFlex;
 
 public class ModuleParameter
@@ -15,8 +17,8 @@ public class ModuleParameter
         }
     }
 
-    public bool InferType(IEnumerable<BicepToken> tokens)
+    public bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
     {
-        return Expression?.InferType(tokens) ?? false;
+        return Expression?.InferType(tokens, referenceTypeAssembly) ?? false;
     }
 }

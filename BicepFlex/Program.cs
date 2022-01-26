@@ -2,8 +2,6 @@
 
 using System.Globalization;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using BicepFlex;
 using BicepRunner;
 using Microsoft.CodeAnalysis;
@@ -11,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 var bicepPath = args[0];
 var bicepOutputPath = args[1];
+var referenceTypesAssembly = "/Users/graemefoster1/code/github/graemefoster/BicepFlex/BicepRunner/bin/Debug/netcoreapp3.1/BicepRunner.dll";
 
 var classes = new List<string>();
 var parse = new BicepFileParser();
@@ -18,13 +17,14 @@ var parse = new BicepFileParser();
 var allMetaFiles = await Task.WhenAll(Directory.GetFiles(bicepPath, "*.bicep", SearchOption.AllDirectories)
     .Select(async f => parse.Parse(f, await File.ReadAllLinesAsync(f))));
 
+var referenceTypeAssembly = Assembly.LoadFile(referenceTypesAssembly);
 var postProcess = false;
 while (!postProcess)
 {
     postProcess = false;
     foreach (var file in allMetaFiles)
     {
-        if (file.PostProcess(allMetaFiles)) postProcess = true;
+        if (file.InferTypes(allMetaFiles, referenceTypeAssembly)) postProcess = true;
     }
 }
 

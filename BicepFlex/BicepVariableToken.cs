@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace BicepFlex;
@@ -29,9 +30,9 @@ public class BicepVariableToken : BicepToken
         return false;
     }
 
-    public bool InferType(IEnumerable<BicepToken> tokens)
+    public bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
     {
-        return Expression?.InferType(tokens) ?? false;
+        return Expression?.InferType(tokens, referenceTypeAssembly) ?? false;
     }
 
     public string? InferredType => Expression?.InferredType;

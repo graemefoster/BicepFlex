@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace BicepFlex;
@@ -30,9 +31,10 @@ public class BicepReferenceExpression : BicepExpression
     /// Look for a variable or a parameter of which we know the type:
     /// </summary>
     /// <param name="tokens"></param>
+    /// <param name="referenceTypeAssembly"></param>
     /// <param name="inferredType"></param>
     /// <returns></returns>
-    public override bool InferType(IEnumerable<BicepToken> tokens)
+    public override bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
     {
         if (InferredType != null && InferredType != "object")
         {

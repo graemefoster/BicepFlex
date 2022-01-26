@@ -4,7 +4,9 @@ using BicepRunner;
 using BicepRunner.Samples;
 using Newtonsoft.Json;
 
-var runner = new AzBicepRunner.AzBicepRunner("testy", @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
+var runner = new AzBicepRunner.AzBicepRunner(
+    "testy", 
+    @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
 
 var stack = new Stack
 {

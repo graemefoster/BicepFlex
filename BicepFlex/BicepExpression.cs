@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace BicepFlex;
 
 public abstract class BicepExpression
@@ -15,5 +17,5 @@ public abstract class BicepExpression
         return false;
     }
 
-    public abstract bool InferType(IEnumerable<BicepToken> tokens);
+    public abstract bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly);
 }
