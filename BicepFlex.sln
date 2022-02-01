@@ -1,20 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BicepFlex", "BicepFlex\BicepFlex.csproj", "{9A3903C1-8734-4710-8342-9D84E15D1EAC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestBicepFiles", "TestBicepFiles", "{8BBC20B1-0A19-4E5B-B8A9-BB6E94E8B3CF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{02718B73-CB74-4A7B-B977-24FB14B1B171}"
 	ProjectSection(SolutionItems) = preProject
-		TestBicepFiles\single-param.bicep = TestBicepFiles\single-param.bicep
-		TestBicepFiles\test-module.bicep = TestBicepFiles\test-module.bicep
+		readme.md = readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BicepTest", "BicepTest\BicepTest.csproj", "{0DD4DEAE-E4BD-4767-8B42-C10F2822BAC8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8AA0783-7547-4521-9A61-ECB92C314D4F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{02718B73-CB74-4A7B-B977-24FB14B1B171}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BicepRunner", "src\BicepRunner\BicepRunner.csproj", "{CD7C8296-C700-4DBC-A21E-548877B3D4B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BicepRunner", "BicepRunner\BicepRunner.csproj", "{828E025D-6BFA-48A1-BCDE-3F7398AD07AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BicepFlex", "src\BicepFlex\BicepFlex.csproj", "{F7152735-7A64-40B1-B561-D9EC62EBFAD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzBicepRunner", "AzBicepRunner\AzBicepRunner.csproj", "{D8DE6D29-61DC-483E-963E-11C938556925}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzBicepRunner", "src\AzBicepRunner\AzBicepRunner.csproj", "{046EC160-E93F-4E08-A33A-7628EAA81E73}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0AB24B03-51E6-4BA2-AFA6-CAC6339919F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BicepTest", "test\BicepTest\BicepTest.csproj", "{72580F9F-5BCE-4177-9052-8605C248CB44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,21 +23,27 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9A3903C1-8734-4710-8342-9D84E15D1EAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A3903C1-8734-4710-8342-9D84E15D1EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A3903C1-8734-4710-8342-9D84E15D1EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A3903C1-8734-4710-8342-9D84E15D1EAC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0DD4DEAE-E4BD-4767-8B42-C10F2822BAC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0DD4DEAE-E4BD-4767-8B42-C10F2822BAC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0DD4DEAE-E4BD-4767-8B42-C10F2822BAC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0DD4DEAE-E4BD-4767-8B42-C10F2822BAC8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{828E025D-6BFA-48A1-BCDE-3F7398AD07AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{828E025D-6BFA-48A1-BCDE-3F7398AD07AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{828E025D-6BFA-48A1-BCDE-3F7398AD07AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{828E025D-6BFA-48A1-BCDE-3F7398AD07AC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D8DE6D29-61DC-483E-963E-11C938556925}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8DE6D29-61DC-483E-963E-11C938556925}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D8DE6D29-61DC-483E-963E-11C938556925}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D8DE6D29-61DC-483E-963E-11C938556925}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD7C8296-C700-4DBC-A21E-548877B3D4B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD7C8296-C700-4DBC-A21E-548877B3D4B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD7C8296-C700-4DBC-A21E-548877B3D4B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD7C8296-C700-4DBC-A21E-548877B3D4B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7152735-7A64-40B1-B561-D9EC62EBFAD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7152735-7A64-40B1-B561-D9EC62EBFAD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7152735-7A64-40B1-B561-D9EC62EBFAD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7152735-7A64-40B1-B561-D9EC62EBFAD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{046EC160-E93F-4E08-A33A-7628EAA81E73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{046EC160-E93F-4E08-A33A-7628EAA81E73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{046EC160-E93F-4E08-A33A-7628EAA81E73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{046EC160-E93F-4E08-A33A-7628EAA81E73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72580F9F-5BCE-4177-9052-8605C248CB44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72580F9F-5BCE-4177-9052-8605C248CB44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72580F9F-5BCE-4177-9052-8605C248CB44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72580F9F-5BCE-4177-9052-8605C248CB44}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CD7C8296-C700-4DBC-A21E-548877B3D4B9} = {E8AA0783-7547-4521-9A61-ECB92C314D4F}
+		{F7152735-7A64-40B1-B561-D9EC62EBFAD0} = {E8AA0783-7547-4521-9A61-ECB92C314D4F}
+		{046EC160-E93F-4E08-A33A-7628EAA81E73} = {E8AA0783-7547-4521-9A61-ECB92C314D4F}
+		{72580F9F-5BCE-4177-9052-8605C248CB44} = {0AB24B03-51E6-4BA2-AFA6-CAC6339919F7}
 	EndGlobalSection
 EndGlobal
