@@ -18,7 +18,7 @@ public class ModuleParameter
         }
     }
 
-    public bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
+    public bool InferType(IEnumerable<BicepToken> tokens, Assembly? referenceTypeAssembly)
     {
         return Expression?.InferType(tokens, referenceTypeAssembly) ?? false;
     }

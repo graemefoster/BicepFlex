@@ -23,5 +23,5 @@ public abstract class BicepExpression
         return false;
     }
 
-    public abstract bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly);
+    public abstract bool InferType(IEnumerable<BicepToken> tokens, Assembly? referenceTypeAssembly);
 }

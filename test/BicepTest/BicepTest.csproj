@@ -15,7 +15,23 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\AzBicepRunner\AzBicepRunner.csproj" />
-      <ProjectReference Include="..\src\AzBicepRunner\AzBicepRunner.csproj" />
+      <ProjectReference Include="..\..\src\BicepFlex\BicepFlex.csproj" />
+      <ProjectReference Include="..\BicepTestTypes\BicepTestTypes.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="TestBicepFiles" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="TestBicepFiles\single-param.bicep" />
+      <Content Include="TestBicepFiles\single-param.bicep">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="TestBicepFiles\test-module.bicep" />
+      <Content Include="TestBicepFiles\test-module.bicep">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

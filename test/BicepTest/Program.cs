@@ -1,14 +1,23 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using BicepRunner;
-using BicepRunner.Samples;
+using BicepTestTypes;
 using Newtonsoft.Json;
+
+var bicepFlex = new BicepFlex.BicepFlex(
+    "./TestBicepFiles", 
+    "../../../../TestBicepOutput/",
+    typeof(Stack).Assembly.Location);
+
+await bicepFlex.Process();
+
+
 
 var runner = new AzBicepRunner.AzBicepRunner(
     "testy", 
     @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
 
-var stack = new Stack
+var stack = new Stack()
 {
     ComplexOne = new SampleComplexObject
     {
@@ -30,12 +39,10 @@ var output =
     await runner
         .ExecuteTemplate(
             bicepFile,
-            o => o,
-            bicepFile,
             o => o)
         .ThenDeploy(o => new SingleParam
         {
-            Name = o.Item1.Nameout,
+            Name = o.Nameout,
             Weathertype = weatherTypeOptions.hail,
             Complex = new SampleComplexObject
             {
@@ -44,7 +51,5 @@ var output =
             }
         });
 
-var nextTest = new TestModule();
-var foo = nextTest.Bar;
-
 Console.WriteLine(JsonConvert.SerializeObject(output));
+

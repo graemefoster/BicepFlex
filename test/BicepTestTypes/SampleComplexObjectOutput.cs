@@ -1,4 +1,4 @@
-﻿namespace BicepRunner.Samples;
+﻿namespace BicepTestTypes;
 
 public class SampleComplexObjectOutput
 {

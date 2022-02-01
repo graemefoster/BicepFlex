@@ -37,7 +37,7 @@ public class BicepEnumToken : BicepParameterToken
             reader.MoveNext();
             if (BicepParameterToken.TryParse(reader, out var parameterToken))
             {
-                token = new BicepEnumToken(parameterToken.Name, tokens.ToArray());
+                token = new BicepEnumToken(parameterToken!.Name, tokens.ToArray());
                 return true;
             }
 

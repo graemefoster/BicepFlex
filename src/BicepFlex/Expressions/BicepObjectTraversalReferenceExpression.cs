@@ -36,14 +36,20 @@ public class BicepObjectTraversalReferenceExpression : BicepReferenceExpression
     /// <param name="tokens"></param>
     /// <param name="referenceTypeAssembly"></param>
     /// <returns></returns>
-    public override bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
+    public override bool InferType(IEnumerable<BicepToken> tokens, Assembly? referenceTypeAssembly)
     {
         if (base.InferType(tokens, referenceTypeAssembly))
         {
             //got a type - now walk the tree
-            var type = referenceTypeAssembly.GetType(InferredType!);
+            var type = referenceTypeAssembly!.GetType(InferredType!);
+            if (type == null)
+            {
+                Console.WriteLine($"WARNING:: Could not find type {InferredType} in Reference Type assembly:{referenceTypeAssembly.GetName().Name}");
+                return false;
+            }
+
             var good = true;
-            foreach (var part in this.Traversals)
+            foreach (var part in Traversals)
             {
                 var prop = type.GetProperty(part, BindingFlags.Public | BindingFlags.Instance);
                 if (prop != null)

@@ -4,7 +4,7 @@ using BicepFlex.Tokens;
 
 namespace BicepFlex;
 
-public class BicepFileParser
+internal class BicepFileParser
 {
     public BicepMetaFile Parse(string fileName, string[] fileContents)
     {

@@ -1,13 +1,14 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace BicepFlex.Tokens;
 
 public class BicepParameterToken : BicepToken
 {
-    private static readonly Regex bicepParameterRegex =
+    private static readonly Regex BicepParameterRegex =
         new(@"^\s*param\s+([A-Za-z0-9_]*?)\s+([A-Za-z0-9_]*?)(\s*|\s+.*?)$");
 
-    private static readonly Regex bicepTypeRegex = new(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9_\.]*)(\s*|(\s+.*?))$");
+    private static readonly Regex BicepTypeRegex = new(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9_\.]*)(\s*|(\s+.*?))$");
 
     public BicepParameterToken(string name, string bicepType, string? customType)
     {
@@ -16,16 +17,16 @@ public class BicepParameterToken : BicepToken
         CustomType = customType;
     }
 
-    public string BicepType { get; set; }
-    public string? CustomType { get; set; }
+    public string BicepType { get; }
+    public string? CustomType { get; internal set; }
 
     public static bool TryParse(IEnumerator<string> reader, out BicepParameterToken? token)
     {
         var line = reader.Current;
-        var match = bicepParameterRegex.Match(line);
+        var match = BicepParameterRegex.Match(line);
         if (match.Success)
         {
-            var typeMatch = bicepTypeRegex.Match(line);
+            var typeMatch = BicepTypeRegex.Match(line);
             token = new BicepParameterToken(
                 match.Groups[1].Value,
                 match.Groups[2].Value,

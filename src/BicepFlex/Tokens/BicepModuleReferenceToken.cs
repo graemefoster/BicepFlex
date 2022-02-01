@@ -60,7 +60,7 @@ public class BicepModuleReferenceToken : BicepToken
     /// <param name="tokens"></param>
     /// <param name="referenceTypeAssembly"></param>
     /// <exception cref="NotImplementedException"></exception>
-    public bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
+    public bool InferType(IEnumerable<BicepToken> tokens, Assembly? referenceTypeAssembly)
     {
         var madeInferences = false;
         foreach (var parameter in Parameters)

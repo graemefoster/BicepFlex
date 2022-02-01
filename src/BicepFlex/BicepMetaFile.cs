@@ -3,7 +3,7 @@ using BicepFlex.Tokens;
 
 namespace BicepFlex;
 
-public class BicepMetaFile
+internal class BicepMetaFile
 {
     public string ModuleName { get; }
     private readonly IEnumerable<BicepToken> _tokens;
@@ -20,7 +20,7 @@ public class BicepMetaFile
     public IEnumerable<BicepOutputToken> Outputs => _tokens.OfType<BicepOutputToken>();
     public string Hash { get; }
 
-    public bool InferTypes(IEnumerable<BicepMetaFile> files, Assembly referenceTypeAssembly)
+    public bool InferTypes(IEnumerable<BicepMetaFile> files, Assembly? referenceTypeAssembly)
     {
         var madeInferences = false;
 

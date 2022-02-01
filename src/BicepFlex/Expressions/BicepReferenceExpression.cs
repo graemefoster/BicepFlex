@@ -34,7 +34,7 @@ public class BicepReferenceExpression : BicepExpression
     /// <param name="tokens"></param>
     /// <param name="referenceTypeAssembly"></param>
     /// <returns></returns>
-    public override bool InferType(IEnumerable<BicepToken> tokens, Assembly referenceTypeAssembly)
+    public override bool InferType(IEnumerable<BicepToken> tokens, Assembly? referenceTypeAssembly)
     {
         if (InferredType != null && InferredType != "object")
         {
