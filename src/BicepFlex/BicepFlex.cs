@@ -65,14 +65,14 @@ public class {pascalCaseName} : BicepTemplate<{pascalCaseName}.{pascalCaseName}O
     public override string FileHash => ""{file.Hash}"";
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
-private {x.DotNetTypeName()} _{x.Name};
-public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
+private {x.DotNetTypeName()}? _{x.Name};
+public {x.DotNetTypeName()}? {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
 
     public class {pascalCaseName}Output : BicepOutput {{
         {string.Join(Environment.NewLine, outputs.Select(x => @$"
 
-        private {x.DotNetTypeName()} _{x.Name};
-        public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
+        private {x.DotNetTypeName()}? _{x.Name};
+        public {x.DotNetTypeName()}? {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
 
         public {pascalCaseName}Output(Dictionary<string, object> outputs) {{
             base.SetProperties(outputs);
@@ -98,7 +98,6 @@ public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}
     {
         var classTemplate = string.Join(Environment.NewLine, classTemplates);
         classTemplate = $@"using BicepRunner;
-using System.Reflection;
 using System.Collections.Generic;
 {classTemplate}";
 
@@ -107,7 +106,7 @@ using System.Collections.Generic;
         var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
         var references = new List<MetadataReference>();
 
-        references.Add(MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(assemblyPath));
         references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "netstandard.dll")));
         references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Collections.dll")));
         references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Runtime.dll")));
@@ -120,8 +119,7 @@ using System.Collections.Generic;
         {
             references.Add(MetadataReference.CreateFromFile(_referenceTypesAssembly!));
         }
-
-
+        
         var compilation = CSharpCompilation.Create("BicepTypes")
             .WithOptions(
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
@@ -139,6 +137,11 @@ using System.Collections.Generic;
             throw new InvalidOperationException(
                 $"Failed to generate compiled library: {compilationResult.Diagnostics}");
         }
+
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        foreach (var issue in compilationResult.Diagnostics)
+            Console.WriteLine(issue.ToString());
+        Console.ResetColor();
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"Outputted assembly at {path}");

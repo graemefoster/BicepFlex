@@ -12,7 +12,6 @@ var bicepFlex = new BicepFlex.BicepFlex(
 await bicepFlex.Process();
 
 
-
 var runner = new AzBicepRunner.AzBicepRunner(
     "testy", 
     @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
