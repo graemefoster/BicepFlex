@@ -13,7 +13,7 @@ internal class BicepFileParser
             Path.GetFileNameWithoutExtension(fileName), 
             SHA512.Create().ComputeHash(
                 Encoding.UTF8.GetBytes(
-                    string.Join(Environment.NewLine, fileContents))),
+                    string.Join("\r\n", fileContents))),
             GetTokens(fileContents.AsEnumerable()));
     }
 
