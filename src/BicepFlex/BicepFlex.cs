@@ -1,9 +1,6 @@
 using System.Globalization;
 using System.Reflection;
 using BicepFlex.Tokens;
-using BicepRunner;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace BicepFlex;
 
@@ -22,11 +19,11 @@ public class BicepFlex
 
     public async Task Process()
     {
-        var classes = new List<string>();
+        var classes = new List<(string filename, string contents)>();
         var parse = new BicepFileParser();
 
         var allMetaFiles = await Task.WhenAll(Directory.GetFiles(_bicepRoot, "*.bicep", SearchOption.AllDirectories)
-            .Select(async f => parse.Parse(f, await File.ReadAllLinesAsync(f))));
+            .Select(async f => parse.Parse(Path.GetRelativePath(_bicepRoot, f), await File.ReadAllLinesAsync(f))));
 
         var referenceTypeAssembly = _referenceTypesAssembly == null ? null : Assembly.LoadFile(_referenceTypesAssembly);
         var postProcess = false;
@@ -41,10 +38,10 @@ public class BicepFlex
 
         foreach (var file in allMetaFiles)
         {
-            classes.Add(GenerateBicepClass(file));
+            classes.Add(($"{PascalCase(file.ModuleName)}.cs", GenerateBicepClass(file)));
         }
 
-        GenerateAssembly(classes.ToArray(), _bicepOutputPath);
+        await WriteCsFiles(classes.ToArray(), _bicepOutputPath);
     }
 
     static string GenerateBicepClass(BicepMetaFile file)
@@ -52,27 +49,30 @@ public class BicepFlex
         var inputs = file.Parameters;
         var outputs = file.Outputs;
 
-        var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(file.ModuleName));
+        var pascalCaseName = PascalCase(Path.GetFileNameWithoutExtension(file.FileName));
         var classTemplate = @$"
+using BicepRunner;
+
 {string.Join(Environment.NewLine, inputs.OfType<BicepEnumToken>().Select(et => $@"
 public enum {et.Name}Options {{
-    {string.Join(Environment.NewLine, et.Tokens.Select(etv => $"{etv},"))}
+{string.Join(Environment.NewLine, et.Tokens.Select(etv => $"    {etv},"))}
 }}
 "))}
 
 public class {pascalCaseName} : BicepTemplate<{pascalCaseName}.{pascalCaseName}Output> {{
-    public override string FileName => ""{file.ModuleName}"";
+    public override string FileName => ""{file.FileName}"";
     public override string FileHash => ""{file.Hash}"";
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
-private {x.DotNetTypeName()}? _{x.Name};
-public {x.DotNetTypeName()}? {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
+    private {x.DotNetTypeName()} _{x.Name} = default!;
+    public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}
+"))}
 
     public class {pascalCaseName}Output : BicepOutput {{
         {string.Join(Environment.NewLine, outputs.Select(x => @$"
 
-        private {x.DotNetTypeName()}? _{x.Name};
-        public {x.DotNetTypeName()}? {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
+        private {x.DotNetTypeName()} _{x.Name} = default!;
+        public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
 
         public {pascalCaseName}Output(Dictionary<string, object> outputs) {{
             base.SetProperties(outputs);
@@ -81,7 +81,7 @@ public {x.DotNetTypeName()}? {PascalCase(x.Name)} {{ get {{ return this._{x.Name
 
     public override Dictionary<string, object> BuildParameters() {{
         var dictionary = new Dictionary<string, object>();
-        {string.Join(Environment.NewLine, inputs.Select(x => @$"dictionary[""{x.Name}""] = new {{ value = this._{x.Name}}};"))}
+{string.Join(Environment.NewLine, inputs.Select(x => @$"        dictionary[""{x.Name}""] = new {{ value = this._{x.Name}}};"))}
         return dictionary;
     }} 
 
@@ -94,57 +94,12 @@ public {x.DotNetTypeName()}? {PascalCase(x.Name)} {{ get {{ return this._{x.Name
         return classTemplate;
     }
 
-    private void GenerateAssembly(string[] classTemplates, string outputPath)
+    private async Task WriteCsFiles((string filename, string contents)[] classTemplates, string outputPath)
     {
-        var classTemplate = string.Join(Environment.NewLine, classTemplates);
-        classTemplate = $@"using BicepRunner;
-using System.Collections.Generic;
-{classTemplate}";
-
-        var tree = SyntaxFactory.ParseSyntaxTree(classTemplate);
-
-        var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
-        var references = new List<MetadataReference>();
-
-        references.Add(MetadataReference.CreateFromFile(assemblyPath));
-        references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "netstandard.dll")));
-        references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Collections.dll")));
-        references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Runtime.dll")));
-        references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Private.CoreLib.dll")));
-
-        //Contains some core type we inherit from
-        var bicepRunner = typeof(IBicepRunner).GetTypeInfo().Assembly.Location;
-        references.Add(MetadataReference.CreateFromFile(bicepRunner));
-        if (_referenceTypesAssembly != null)
-        {
-            references.Add(MetadataReference.CreateFromFile(_referenceTypesAssembly!));
-        }
-        
-        var compilation = CSharpCompilation.Create("BicepTypes")
-            .WithOptions(
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-                    nullableContextOptions: NullableContextOptions.Enable,
-                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default))
-            .AddReferences(references)
-            .AddSyntaxTrees(tree);
-
-        var path = Path.GetFullPath(Path.Combine(outputPath, $"BicepTypes.dll"));
-        var compilationResult = compilation.Emit(path);
-        if (!compilationResult.Success)
-        {
-            foreach (var issue in compilationResult.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error))
-                Console.WriteLine(issue.ToString());
-            throw new InvalidOperationException(
-                $"Failed to generate compiled library: {compilationResult.Diagnostics}");
-        }
-
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        foreach (var issue in compilationResult.Diagnostics)
-            Console.WriteLine(issue.ToString());
-        Console.ResetColor();
-
+        await Task.WhenAll(classTemplates.Select(f =>
+            File.WriteAllTextAsync(Path.Combine(outputPath, f.filename), f.contents)));
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"Outputted assembly at {path}");
+        Console.WriteLine($"Outputted files at {outputPath}");
         Console.ResetColor();
     }
 
@@ -155,5 +110,4 @@ using System.Collections.Generic;
             .Replace("-", "")
             .Replace(" ", "");
     }
-
 }

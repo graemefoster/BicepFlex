@@ -4,6 +4,10 @@ public interface INextStep<TState>
 {
     TState Output { get; }
 
+    Task<T1> ThenDeploy<T1>(
+        Func<TState, BicepTemplate<T1>> template)
+        where T1 : BicepOutput;
+
     Task<INextStep<TNextState>> ThenDeploy<T1, TNextState>(
         Func<TState, BicepTemplate<T1>> template,
         Func<T1, TNextState> stateGenerator)

@@ -8,18 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="BicepTypes, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\TestBicepOutput\BicepTypes.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\..\src\AzBicepRunner\AzBicepRunner.csproj" />
       <ProjectReference Include="..\..\src\BicepFlex\BicepFlex.csproj" />
       <ProjectReference Include="..\BicepTestTypes\BicepTestTypes.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="BicepFlexOutput" />
       <Folder Include="TestBicepFiles" />
     </ItemGroup>
 

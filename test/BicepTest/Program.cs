@@ -5,8 +5,8 @@ using BicepTestTypes;
 using Newtonsoft.Json;
 
 var bicepFlex = new BicepFlex.BicepFlex(
-    "./TestBicepFiles", 
-    "../../../../TestBicepOutput/",
+    "./TestBicepFiles/", 
+    "../../../BicepFlexOutput/",
     typeof(Stack).Assembly.Location);
 
 await bicepFlex.Process();
@@ -14,7 +14,7 @@ await bicepFlex.Process();
 
 var runner = new AzBicepRunner.AzBicepRunner(
     "testy", 
-    @"C:\code\github\graemefoster\BicepFlex\TestBicepFiles\");
+    @"./TestBicepFiles/");
 
 var stack = new Stack()
 {
@@ -31,18 +31,19 @@ var bicepFile = new SingleParam
     Name = "Graeme",
     Complex = stack.ComplexOne,
     Names = Array.Empty<SampleComplexObject>(),
-    Names2 = Array.Empty<object>()
+    Names2 = Array.Empty<object>(),
+    Weathertype = weatherTypeOptions.hail
 };
 
 var output =
     await runner
-        .ExecuteTemplate(
-            bicepFile,
-            o => o)
+        .ExecuteTemplate(bicepFile,s => s)
         .ThenDeploy(o => new SingleParam
         {
             Name = o.Nameout,
             Weathertype = weatherTypeOptions.hail,
+            Names = Array.Empty<SampleComplexObject>(),
+            Names2 = Array.Empty<object>(),
             Complex = new SampleComplexObject
             {
                 Property1 = "ASASASs",

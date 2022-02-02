@@ -12,9 +12,10 @@ param weatherType string
 var foo = complex
 var too = foo.Property1
 var yoo = 'complex'
-var moo = complex.Property1 + "Hello"
+var moo = '${complex.Property1}Hello${yoo}'
 
 module funkyFoo './test-module.bicep' = {
+  name: 'funkyfoo'
   params: {
     bar: too
   }
@@ -26,4 +27,8 @@ output strongtype object = { //@bicepflextype BicepTestTypes.SampleComplexObject
   id: name
   complexProperty1: complex.Property1
   complexProperty2: complex.Property2
+  moo: moo
+  weather: weatherType
+  names: names
+  names2: names2
 }

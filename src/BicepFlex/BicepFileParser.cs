@@ -9,6 +9,7 @@ internal class BicepFileParser
     public BicepMetaFile Parse(string fileName, string[] fileContents)
     {
         return new BicepMetaFile(
+            fileName,
             Path.GetFileNameWithoutExtension(fileName), 
             SHA512.Create().ComputeHash(
                 Encoding.UTF8.GetBytes(

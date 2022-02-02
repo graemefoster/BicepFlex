@@ -1,2 +1,3 @@
-param bar object
+param bar string
 
+output nameout string = bar

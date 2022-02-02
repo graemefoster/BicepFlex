@@ -6,10 +6,12 @@ namespace BicepFlex;
 internal class BicepMetaFile
 {
     public string ModuleName { get; }
+    public string FileName { get; }
     private readonly IEnumerable<BicepToken> _tokens;
 
-    public BicepMetaFile(string moduleName, byte[] hash, IEnumerable<BicepToken?> tokens)
+    public BicepMetaFile(string fileName, string moduleName, byte[] hash, IEnumerable<BicepToken?> tokens)
     {
+        FileName = fileName.Replace("\\", "/");
         ModuleName = moduleName;
         _tokens = tokens.Where(x => x != null).Select(x => x!).ToArray();
         Hash = Convert.ToBase64String(hash);

@@ -1,4 +1,5 @@
-﻿using BicepRunner;
+﻿using Azure.ResourceManager.Resources.Models;
+using BicepRunner;
 
 namespace AzBicepRunner;
 
@@ -23,6 +24,11 @@ public class AzNextStepRunner<TState> : INextStep<TState>
     }
 
     public TState Output { get; }
+
+    public async Task<T1> ThenDeploy<T1>(Func<TState, BicepTemplate<T1>> template) where T1 : BicepOutput
+    {
+        return (await _runner.ExecuteTemplate(template(Output), s => s)).Output;
+    }
 
     public Task<INextStep<TNextState>> ThenDeploy<T1, TNextState>(Func<TState, BicepTemplate<T1>> template,
         Func<T1, TNextState> stateGenerator) where T1 : BicepOutput

@@ -5,6 +5,8 @@ public interface IBicepRunner
     Task<INextStep<TState>> ExecuteTemplate<T, TState>(BicepTemplate<T> template, Func<T, TState> stateGenerator)
         where T : BicepOutput;
 
+    Task<T> ExecuteTemplate<T, TState>(BicepTemplate<T> template) where T : BicepOutput;
+
     Task<INextStep<Tuple<TState1, TState2>>> ExecuteTemplate<T1, T2, TState1, TState2>(
         BicepTemplate<T1> template1,
         Func<T1, TState1> state1Generator,

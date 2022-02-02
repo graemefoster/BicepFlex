@@ -20,7 +20,7 @@ public class AzBicepRunner : IBicepRunner
     public AzBicepRunner(string resourceGroup, string bicepRoot)
     {
         _resourceGroup = resourceGroup;
-        _bicepRoot = bicepRoot;
+        _bicepRoot = Path.GetFullPath(bicepRoot)!;
         _armClient = new ArmClient(new DefaultAzureCredential());
     }
 
@@ -28,6 +28,11 @@ public class AzBicepRunner : IBicepRunner
         Func<T, TState> stateGenerator) where T : BicepOutput
     {
         return new AzNextStepRunner<TState>(stateGenerator(await ExecuteTemplate(template)), this);
+    }
+
+    public Task<T> ExecuteTemplate<T, TState>(BicepTemplate<T> template) where T : BicepOutput
+    {
+        return ExecuteTemplate(template);
     }
 
     public async Task<INextStep<Tuple<TState1, TState2, TState3>>> ExecuteTemplate<T1, T2, T3, TState1, TState2,
