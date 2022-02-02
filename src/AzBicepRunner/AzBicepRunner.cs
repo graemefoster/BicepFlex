@@ -86,17 +86,14 @@ public class AzBicepRunner : IBicepRunner
         {
             var bicepFile = Path.Combine(_bicepRoot, template.FileName);
             var bicepToJsonProcess =
-                new ProcessStartInfo(@"""c:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin\az.cmd""",
-                    $"bicep build --file {bicepFile} --outfile \"{temp}\"")
+                new ProcessStartInfo("az", $"bicep build --file {bicepFile} --outfile \"{temp}\"")
                 {
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    UseShellExecute = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
                 };
             var p = Process.Start(bicepToJsonProcess)!;
-            p.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
-            p.ErrorDataReceived += (sender, args) => Console.WriteLine(args.Data);
-
             await p.WaitForExitAsync();
+
             if (p.ExitCode != 0) throw new InvalidOperationException("Failed to execute az");
 
             var json = await File.ReadAllTextAsync(temp, Encoding.UTF8);
