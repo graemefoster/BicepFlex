@@ -18,34 +18,34 @@ public partial class SingleParam : BicepTemplate<SingleParam.SingleParamOutput> 
 
 
     private string _name = default!;
-    public string Name { get { return this._name; } set { this._name = value; } }
+    public string Name { get => this._name; set { this._name = value; } }
 
 
     private BicepTestTypes.SampleComplexObject _complex = default!;
-    public BicepTestTypes.SampleComplexObject Complex { get { return this._complex; } set { this._complex = value; } }
+    public BicepTestTypes.SampleComplexObject Complex { get => this._complex; set { this._complex = value; } }
 
 
     private BicepTestTypes.SampleComplexObject[] _names = default!;
-    public BicepTestTypes.SampleComplexObject[] Names { get { return this._names; } set { this._names = value; } }
+    public BicepTestTypes.SampleComplexObject[] Names { get => this._names; set { this._names = value; } }
 
 
     private System.Array _names2 = default!;
-    public System.Array Names2 { get { return this._names2; } set { this._names2 = value; } }
+    public System.Array Names2 { get => this._names2; set { this._names2 = value; } }
 
 
     private weatherTypeOptions _weatherType = default!;
-    public weatherTypeOptions Weathertype { get { return this._weatherType; } set { this._weatherType = value; } }
+    public weatherTypeOptions Weathertype { get => this._weatherType; set { this._weatherType = value; } }
 
 
     public partial class SingleParamOutput : BicepOutput {
         
 
         private string _nameout = default!;
-        public string Nameout { get { return this._nameout; } set { this._nameout = value; } }
+        public string Nameout { get => this._nameout; set { this._nameout = value; } }
 
 
         private BicepTestTypes.SampleComplexObjectOutput _strongtype = default!;
-        public BicepTestTypes.SampleComplexObjectOutput Strongtype { get { return this._strongtype; } set { this._strongtype = value; } }
+        public BicepTestTypes.SampleComplexObjectOutput Strongtype { get => this._strongtype; set { this._strongtype = value; } }
 
         public SingleParamOutput(Dictionary<string, object> outputs) {
             base.SetProperties(outputs);

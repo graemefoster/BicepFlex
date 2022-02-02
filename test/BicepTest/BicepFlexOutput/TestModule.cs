@@ -13,14 +13,14 @@ public partial class TestModule : BicepTemplate<TestModule.TestModuleOutput> {
 
 
     private System.String _bar = default!;
-    public System.String Bar { get { return this._bar; } set { this._bar = value; } }
+    public System.String Bar { get => this._bar; set { this._bar = value; } }
 
 
     public partial class TestModuleOutput : BicepOutput {
         
 
         private string _nameout = default!;
-        public string Nameout { get { return this._nameout; } set { this._nameout = value; } }
+        public string Nameout { get => this._nameout; set { this._nameout = value; } }
 
         public TestModuleOutput(Dictionary<string, object> outputs) {
             base.SetProperties(outputs);

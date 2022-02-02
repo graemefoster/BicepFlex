@@ -69,14 +69,14 @@ public partial class {pascalCaseName} : BicepTemplate<{pascalCaseName}.{pascalCa
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
     private {x.DotNetTypeName()} _{x.Name} = default!;
-    public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}
+    public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get => this._{x.Name}; set {{ this._{x.Name} = value; }} }}
 "))}
 
     public partial class {pascalCaseName}Output : BicepOutput {{
         {string.Join(Environment.NewLine, outputs.Select(x => @$"
 
         private {x.DotNetTypeName()} _{x.Name} = default!;
-        public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get {{ return this._{x.Name}; }} set {{ this._{x.Name} = value; }} }}"))}
+        public {x.DotNetTypeName()} {PascalCase(x.Name)} {{ get => this._{x.Name}; set {{ this._{x.Name} = value; }} }}"))}
 
         public {pascalCaseName}Output(Dictionary<string, object> outputs) {{
             base.SetProperties(outputs);
