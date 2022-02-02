@@ -63,9 +63,7 @@ var output =
                 Name = "Graeme",
                 Weathertype = weatherTypeOptions.rain,
                 Complex = stack.ComplexOne
-            },
-            //capture outputs and optionally transform them
-            o => o)
+            })
         //Fluent API for chaining Bicep deployments together
         .ThenDeploy(o => new SingleParam
         {
