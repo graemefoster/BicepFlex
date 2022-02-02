@@ -43,16 +43,6 @@ dotnet bicepflex <bicep-files-path> <bicep-flex-output-path> [<reference-assembl
  ```
 
 ```c#
-var stack = new Stack
-{
-    ComplexOne = new SampleComplexObject
-    {
-        Property1 = "Hello World!",
-        Property2 = 78
-    },
-    Two = "HELLO"
-};
-
 var output =
     await runner
         
@@ -62,7 +52,11 @@ var output =
             {
                 Name = "Graeme",
                 Weathertype = weatherTypeOptions.rain,
-                Complex = stack.ComplexOne
+                Complex = new SampleComplexObject
+                {
+                    Property1 = "Hello World!",
+                    Property2 = 78
+                }
             })
         //Fluent API for chaining Bicep deployments together
         .ThenDeploy(o => new SingleParam
