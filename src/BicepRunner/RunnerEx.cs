@@ -43,7 +43,7 @@ public static class RunnerEx
         return await (await obj).ThenDeploy(template, stateGenerator);
     }
 
-    public static async Task<T1> ThenDeploy<T1, TState>(
+    public static async Task<INextStep<T1>> ThenDeploy<T1, TState>(
         this Task<INextStep<TState>> obj,
         Func<TState, BicepTemplate<T1>> template) where T1 : BicepOutput
     {

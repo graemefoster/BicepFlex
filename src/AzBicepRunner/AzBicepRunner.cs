@@ -27,12 +27,12 @@ public class AzBicepRunner : IBicepRunner
     public async Task<INextStep<TState>> ExecuteTemplate<T, TState>(BicepTemplate<T> template,
         Func<T, TState> stateGenerator) where T : BicepOutput
     {
-        return new AzNextStepRunner<TState>(stateGenerator(await ExecuteTemplate(template)), this);
+        return new AzNextStepRunner<TState>(stateGenerator(await ExecuteTemplateInternal(template)), this);
     }
 
-    public Task<T> ExecuteTemplate<T, TState>(BicepTemplate<T> template) where T : BicepOutput
+    public async Task<INextStep<T>> ExecuteTemplate<T>(BicepTemplate<T> template) where T : BicepOutput
     {
-        return ExecuteTemplate(template);
+        return new AzNextStepRunner<T>(await ExecuteTemplateInternal(template), this);
     }
 
     public async Task<INextStep<Tuple<TState1, TState2, TState3>>> ExecuteTemplate<T1, T2, T3, TState1, TState2,
@@ -48,9 +48,9 @@ public class AzBicepRunner : IBicepRunner
         where T2 : BicepOutput
         where T3 : BicepOutput
     {
-        var task1 = ExecuteTemplate(template1);
-        var task2 = ExecuteTemplate(template2);
-        var task3 = ExecuteTemplate(template3);
+        var task1 = ExecuteTemplateInternal(template1);
+        var task2 = ExecuteTemplateInternal(template2);
+        var task3 = ExecuteTemplateInternal(template3);
         await Task.WhenAll(task1, task2, task3);
 
         return new AzNextStepRunner<Tuple<TState1, TState2, TState3>>(
@@ -68,8 +68,8 @@ public class AzBicepRunner : IBicepRunner
         where T1 : BicepOutput
         where T2 : BicepOutput
     {
-        var task1 = ExecuteTemplate(template1);
-        var task2 = ExecuteTemplate(template2);
+        var task1 = ExecuteTemplateInternal(template1);
+        var task2 = ExecuteTemplateInternal(template2);
         await Task.WhenAll(task1, task2);
         return new AzNextStepRunner<Tuple<TState1, TState2>>(
             new Tuple<TState1, TState2>(state1Generator(await task1), state2Generator(await task2)),
@@ -77,7 +77,7 @@ public class AzBicepRunner : IBicepRunner
         );
     }
 
-    public async Task<T> ExecuteTemplate<T>(BicepTemplate<T> template) where T : BicepOutput
+    private async Task<T> ExecuteTemplateInternal<T>(BicepTemplate<T> template) where T : BicepOutput
     {
         var buildParameters = template.BuildParameters();
 
