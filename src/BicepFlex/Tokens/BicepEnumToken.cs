@@ -1,17 +1,35 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace BicepFlex.Tokens;
 
 public class BicepEnumToken : BicepParameterToken
 {
-    public BicepEnumToken(string name, string[] tokens) : base(name, "string", $"{name}Options")
+    public BicepEnumToken(string moduleName, string name, string[] tokens) : base(name, "string", $"{moduleName.ToPascalCase()}{name.ToPascalCase()}Options")
     {
         Tokens = tokens;
     }
 
     public string[] Tokens { get; }
 
-    public static bool TryParse(IEnumerator<string> reader, out BicepToken? token)
+    public IEnumerable<(string DotNetFriendlyName, string BicepValue)> DotNetFriendlyTokens => Tokens.Select(DotNetFriendlyEnum);
+
+    private (string, string) DotNetFriendlyEnum(string bicepValue)
+    {
+        if (bicepValue == "default")
+        {
+            return ("_default", bicepValue);
+        }
+
+        if (double.TryParse(bicepValue, out var val2))
+        {
+            return ($"NUM_{bicepValue.Replace(".", "_")}", bicepValue);
+        }
+
+        return (bicepValue, bicepValue);
+    }
+
+    public static bool TryParse(string moduleName, IEnumerator<string> reader, out BicepToken? token)
     {
         var tokenRegex = new Regex(@"^\s*'(.*)'\s*$");
         var line = reader.Current;
@@ -20,12 +38,16 @@ public class BicepEnumToken : BicepParameterToken
             var tokens = new List<string>();
             if (reader.MoveNext())
             {
-                var canRead = true;
+                bool canRead;
                 do
                 {
                     if (reader.Current.Contains("])")) break;
                     var enumMatch = tokenRegex.Match(reader.Current);
-                    tokens.Add(enumMatch.Groups[1].Value);
+                    if (enumMatch.Success)
+                    {
+                        tokens.Add(enumMatch.Groups[1].Value);
+                    }
+
                     canRead = reader.MoveNext();
                 } while (canRead);
             }
@@ -39,9 +61,9 @@ public class BicepEnumToken : BicepParameterToken
             if (BicepCommentToken.TryParse(reader)) reader.MoveNext();
             if (BicepEmptyLineToken.TryParse(reader)) reader.MoveNext();
 
-            if (BicepParameterToken.TryParse(reader, out var parameterToken))
+            if (BicepParameterToken.TryParse(moduleName, reader, out var parameterToken))
             {
-                token = new BicepEnumToken(parameterToken!.Name, tokens.ToArray());
+                token = new BicepEnumToken(moduleName, parameterToken!.Name, tokens.ToArray());
                 return true;
             }
 

@@ -19,7 +19,7 @@ public class BicepOutputToken : BicepToken
 
     public string DotNetTypeName()
     {
-        if (CustomType == null) return BicepType == "array" ? "System.Array" : BicepType;
+        if (CustomType == null || CustomType == "array") return BicepType == "array" ? "System.Array" : BicepType;
 
         if (BicepType == "array") return $"{CustomType}[]";
 

@@ -20,7 +20,7 @@ public class BicepParameterToken : BicepToken
     public string BicepType { get; }
     public string? CustomType { get; internal set; }
 
-    public static bool TryParse(IEnumerator<string> reader, out BicepParameterToken? token)
+    public static bool TryParse(string moduleName, IEnumerator<string> reader, out BicepParameterToken? token)
     {
         var line = reader.Current;
         var match = BicepParameterRegex.Match(line);
@@ -41,7 +41,7 @@ public class BicepParameterToken : BicepToken
 
     public string DotNetTypeName()
     {
-        if (CustomType == null) return BicepType == "array" ? "System.Array" : BicepType;
+        if (CustomType == null || CustomType == "array") return BicepType == "array" ? "System.Array" : BicepType;
 
         if (BicepType == "array") return $"{CustomType}[]";
 
