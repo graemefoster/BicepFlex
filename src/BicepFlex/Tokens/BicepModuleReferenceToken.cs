@@ -8,19 +8,23 @@ public class BicepModuleReferenceToken : BicepToken
     private static readonly Regex regex = new(@"^\s*module\s+([A-Za-z0-9_]*)\s+\'([A-Za-z0-9_\.\/\-]*)\'");
     private static readonly Regex referenceRegex = new(@"^\s+([A-Za-z0-9_]*)\s*\:\s*([A-Za-z0-9_]*)\s*$");
 
-    private BicepModuleReferenceToken(string variableName, string modulePath, List<(string, string)> parameters)
+    private BicepModuleReferenceToken(string variableName, string modulePath, string? referenceDirectory, List<(string, string)> parameters)
     {
         VariableName = variableName;
         ModulePath = modulePath;
+        ReferenceDirectory = referenceDirectory;
         Parameters = parameters.Select(x => new ModuleParameter(x.Item1, x.Item2))
             .ToArray();
     }
 
     public string VariableName { get; }
     public string ModulePath { get; }
+    private string? ReferenceDirectory { get; }
+
+    public string RelativePathFromRoot => ReferenceDirectory == null ? ModulePath : Path.Combine(ReferenceDirectory, ModulePath);
     public ModuleParameter[] Parameters { get; }
 
-    public static bool TryParse(IEnumerator<string> reader, out BicepModuleReferenceToken? token)
+    public static bool TryParse(IEnumerator<string> reader, string currentDirectory, out BicepModuleReferenceToken? token)
     {
         var line = reader.Current;
         var match = regex.Match(line);
@@ -46,7 +50,7 @@ public class BicepModuleReferenceToken : BicepToken
                 throw new InvalidOperationException(
                     $"Failed to parse module. Finished with {openParenthesis} open curly brackets");
 
-            token = new BicepModuleReferenceToken(moduleName, modulePath, parameters);
+            token = new BicepModuleReferenceToken(moduleName, modulePath, currentDirectory, parameters);
             return true;
         }
 

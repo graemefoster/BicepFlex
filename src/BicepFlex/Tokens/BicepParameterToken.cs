@@ -5,8 +5,8 @@ namespace BicepFlex.Tokens;
 
 public class BicepParameterToken : BicepToken
 {
-    private static readonly Regex BicepParameterRegex =
-        new(@"^\s*param\s+([A-Za-z0-9_]*?)\s+([A-Za-z0-9_]*?)(\s*|\s+.*?)$");
+
+    private static readonly Regex BicepParameterRegex = new(@"^\s*param\s+([A-Za-z0-9_]*?)\s+([A-Za-z0-9_]*?)(\s*|\s+.*?)$");
 
     private static readonly Regex BicepTypeRegex = new(@"\/\/.*?@bicepflextype\s+([A-Za-z0-9_\.]*)(\s*|(\s+.*?))$");
 

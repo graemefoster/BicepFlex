@@ -42,16 +42,17 @@ public class BicepReferenceExpression : BicepExpression
         }
 
         var parameter = tokens.OfType<BicepParameterToken>().SingleOrDefault(x => x.Name == Reference);
+        var previousInferred = InferredType;
         if (parameter != null)
         {
             InferredType = parameter.CustomType ?? parameter.BicepType;
-            return true;
+            return previousInferred != InferredType;
         }
         var variable = tokens.OfType<BicepVariableToken>().SingleOrDefault(x => x.Name == Reference);
         if (variable != null)
         {
             InferredType = variable.InferredType;
-            return true;
+            return previousInferred != InferredType;
         }
 
         return false;

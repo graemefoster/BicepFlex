@@ -26,19 +26,22 @@ public class BicepFlex
             .Select(async f => parse.Parse(Path.GetRelativePath(_bicepRoot, f), await File.ReadAllLinesAsync(f))));
 
         var referenceTypeAssembly = _referenceTypesAssembly == null ? null : Assembly.LoadFile(_referenceTypesAssembly);
-        var postProcess = false;
-        while (!postProcess)
+        var keepGoing = true;
+        while (keepGoing)
         {
-            postProcess = false;
+            var madeInferences = false;
             foreach (var file in allMetaFiles)
             {
-                if (file.InferTypes(allMetaFiles, referenceTypeAssembly)) postProcess = true;
+                if (file.InferTypes(_bicepRoot, allMetaFiles, referenceTypeAssembly)) madeInferences = true;
             }
+
+            //If we made some inferences, do another pass to see if we can make some more
+            keepGoing = madeInferences;
         }
 
         foreach (var file in allMetaFiles)
         {
-            classes.Add(($"{PascalCase(file.ModuleName)}.cs", GenerateBicepClass(file)));
+            classes.Add(($"{PascalCase(file.FileName)}.cs", GenerateBicepClass(file)));
         }
 
         await WriteCsFiles(classes.ToArray(), _bicepOutputPath);
@@ -98,10 +101,14 @@ public partial class {pascalCaseName} : BicepTemplate<{pascalCaseName}.{pascalCa
         return classTemplate;
     }
 
-    private async Task WriteCsFiles((string filename, string contents)[] classTemplates, string outputPath)
+    private async Task WriteCsFiles((string relativePath, string contents)[] classTemplates, string outputPath)
     {
         await Task.WhenAll(classTemplates.Select(f =>
-            File.WriteAllTextAsync(Path.Combine(outputPath, f.filename), f.contents)));
+        {
+            var fullPath = Path.Combine(outputPath, f.relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+            return File.WriteAllTextAsync(fullPath, f.contents);
+        }));
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"Outputted files at {outputPath}");
         Console.ResetColor();

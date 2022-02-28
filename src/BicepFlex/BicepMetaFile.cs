@@ -3,16 +3,18 @@ using BicepFlex.Tokens;
 
 namespace BicepFlex;
 
-internal class BicepMetaFile
+public class BicepMetaFile
 {
     public string ModuleName { get; }
+    public string? Directory { get; }
     public string FileName { get; }
     private readonly IEnumerable<BicepToken> _tokens;
 
-    public BicepMetaFile(string fileName, string moduleName, byte[] hash, IEnumerable<BicepToken?> tokens)
+    public BicepMetaFile(string? directory, string fileName, byte[] hash, IEnumerable<BicepToken?> tokens)
     {
-        FileName = fileName.Replace("\\", "/");
-        ModuleName = moduleName;
+        Directory = directory;
+        FileName = fileName.Replace(Path.DirectorySeparatorChar, '/');
+        ModuleName = Path.GetFileNameWithoutExtension(fileName);
         _tokens = tokens.Where(x => x != null).Select(x => x!).ToArray();
         Hash = Convert.ToBase64String(hash);
     }
@@ -22,7 +24,7 @@ internal class BicepMetaFile
     public IEnumerable<BicepOutputToken> Outputs => _tokens.OfType<BicepOutputToken>();
     public string Hash { get; }
 
-    public bool InferTypes(IEnumerable<BicepMetaFile> files, Assembly? referenceTypeAssembly)
+    public bool InferTypes(string rootPath, IEnumerable<BicepMetaFile> files, Assembly? referenceTypeAssembly)
     {
         var madeInferences = false;
 
@@ -36,7 +38,8 @@ internal class BicepMetaFile
         {
             if (moduleReference.InferType(_tokens, referenceTypeAssembly))
             {
-                var module = files.Single(x => x.ModuleName == Path.GetFileNameWithoutExtension(moduleReference.ModulePath));
+                var fullpath = Path.GetRelativePath(rootPath, Path.Combine(rootPath, moduleReference.RelativePathFromRoot)).Replace(Path.DirectorySeparatorChar, '/');
+                var module = files.Single(x => x.FileName == fullpath);
                 module.InferTypes(moduleReference);
             }
         }
@@ -55,10 +58,16 @@ internal class BicepMetaFile
             if (parameter.InferredType != null)
             {
                 Console.WriteLine($"Specific type discovered for parameter {parameter.Name} - {parameter.InferredType}");
-                var parameterToken = _tokens.OfType<BicepParameterToken>().Single(x => x.Name == parameter.Name);
+                var parameterToken = _tokens.OfType<BicepParameterToken>().SingleOrDefault(x => x.Name == parameter.Name);
+                if (parameterToken == null)
+                {
+                    Console.WriteLine(
+                        $"WARNING: parameter {parameter.Name} passed from {referencingBicepFile.RelativePathFromRoot} cannot be found in: {this.FileName}");
+                    return;
+                }
                 if (parameterToken.CustomType == null)
                 {
-                    Console.WriteLine($"Chaning parameter {parameterToken.Name} to have inferred type: {parameter.InferredType}");
+                    Console.WriteLine($"Changing parameter {parameterToken.Name} to have inferred type: {parameter.InferredType}");
                     parameterToken.CustomType = parameter.InferredType;
                 }
             }
