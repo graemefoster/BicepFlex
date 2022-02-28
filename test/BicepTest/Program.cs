@@ -41,7 +41,7 @@ var bicepFile = new SingleParamModule()
 
 var output =
     await runner
-        .ExecuteTemplate(bicepFile, s => s)
+        .ExecuteTemplate(bicepFile)
         .ThenDeploy(o => new SingleParamModule
         {
             Name = o.Nameout,
@@ -55,4 +55,4 @@ var output =
             }
         });
 
-Console.WriteLine(JsonConvert.SerializeObject(output));
+Console.WriteLine(JsonConvert.SerializeObject(output.Output));

@@ -16,8 +16,8 @@ internal class BicepFileParser
             fileName,
             SHA512.Create().ComputeHash(
                 Encoding.UTF8.GetBytes(
-                    string.Join(Environment.NewLine, fileContents))),
-            GetTokens(fileContents.AsEnumerable(), directory, moduleName));
+                    string.Join("\r\n", fileContents))),
+            GetTokens(fileContents.AsEnumerable(), directory!, moduleName));
     }
 
     private IEnumerable<BicepToken> GetTokens(IEnumerable<string> lines, string directory, string moduleName)
