@@ -6,13 +6,16 @@
 using BicepRunner;
 
 
-public enum weatherTypeOptions {
-    rain,
-    hail,
+
+
+public class SingleParamWeathertypeOptions : BicepOptions {
+    private  SingleParamWeathertypeOptions(string bicepValue): base(bicepValue) {
+    }
+    public static readonly SingleParamWeathertypeOptions rain = new ("rain");
+    public static readonly SingleParamWeathertypeOptions hail = new ("hail");
 }
 
-
-public partial class SingleParam : BicepTemplate<SingleParam.SingleParamOutput> {
+public partial class SingleParamModule : BicepTemplate<SingleParamModule.SingleParamOutput> {
     public override string FileName => "single-param.bicep";
     public override string FileHash => "wiYzY1I4ws2TGeLFA8/M1KcNb+iGxRtLpfdWV9O+PAZXkyjrHsB6Ay4Ywe3V++cwsk7c71/PnK+qNM0QepjBTQ==";
 
@@ -33,8 +36,8 @@ public partial class SingleParam : BicepTemplate<SingleParam.SingleParamOutput> 
     public System.Array Names2 { get => this._names2; set { this._names2 = value; } }
 
 
-    private weatherTypeOptions _weatherType = default!;
-    public weatherTypeOptions Weathertype { get => this._weatherType; set { this._weatherType = value; } }
+    private SingleParamWeathertypeOptions _weatherType = default!;
+    public SingleParamWeathertypeOptions Weathertype { get => this._weatherType; set { this._weatherType = value; } }
 
 
     public partial class SingleParamOutput : BicepOutput {
@@ -54,11 +57,11 @@ public partial class SingleParam : BicepTemplate<SingleParam.SingleParamOutput> 
 
     public override Dictionary<string, object> BuildParameters() {
         var dictionary = new Dictionary<string, object>();
+        dictionary["weatherType"] = new { value = this._weatherType.BicepValue};
         dictionary["name"] = new { value = this._name};
         dictionary["complex"] = new { value = this._complex};
         dictionary["names"] = new { value = this._names};
         dictionary["names2"] = new { value = this._names2};
-        dictionary["weatherType"] = new { value = this._weatherType};
         return dictionary;
     } 
 

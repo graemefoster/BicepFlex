@@ -7,7 +7,9 @@ using BicepRunner;
 
 
 
-public partial class TestModule : BicepTemplate<TestModule.TestModuleOutput> {
+
+
+public partial class TestModuleModule : BicepTemplate<TestModuleModule.TestModuleOutput> {
     public override string FileName => "test-module.bicep";
     public override string FileHash => "/IF2TbPynB2BJnGCoyF8gfClqSupT7xbBSd2XkYjZJuePmpKzvJjmr4Bn6CmnN5Tvz5O6zUpfrghRIGATFHiIw==";
 
@@ -29,6 +31,7 @@ public partial class TestModule : BicepTemplate<TestModule.TestModuleOutput> {
 
     public override Dictionary<string, object> BuildParameters() {
         var dictionary = new Dictionary<string, object>();
+
         dictionary["bar"] = new { value = this._bar};
         return dictionary;
     } 

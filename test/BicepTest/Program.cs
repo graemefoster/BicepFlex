@@ -5,7 +5,7 @@ using BicepTestTypes;
 using Newtonsoft.Json;
 
 var bicepFlex = new BicepFlex.BicepFlex(
-    "./TestBicepFiles/", 
+    "./TestBicepFiles/",
     "../../../BicepFlexOutput/",
     typeof(Stack).Assembly.Location);
 
@@ -13,7 +13,7 @@ await bicepFlex.Process();
 
 
 var runner = new AzBicepRunner.AzBicepRunner(
-    "testy", 
+    "testy",
     @"./TestBicepFiles/");
 
 var stack = new Stack()
@@ -26,22 +26,26 @@ var stack = new Stack()
     Two = "HELLO"
 };
 
-var bicepFile = new SingleParam
+var bicepFile = new SingleParamModule()
 {
     Name = "Graeme",
     Complex = stack.ComplexOne,
-    Names = Array.Empty<SampleComplexObject>(),
+    Names = new[]
+    {
+        new SampleComplexObject() { Property1 = "HELLO", Property2 = 38 },
+        new SampleComplexObject() { Property1 = "HELLO2", Property2 = 39 }
+    },
     Names2 = Array.Empty<object>(),
-    Weathertype = weatherTypeOptions.hail
+    Weathertype = SingleParamWeathertypeOptions.hail
 };
 
 var output =
     await runner
-        .ExecuteTemplate(bicepFile,s => s)
-        .ThenDeploy(o => new SingleParam
+        .ExecuteTemplate(bicepFile, s => s)
+        .ThenDeploy(o => new SingleParamModule
         {
             Name = o.Nameout,
-            Weathertype = weatherTypeOptions.hail,
+            Weathertype = SingleParamWeathertypeOptions.hail,
             Names = Array.Empty<SampleComplexObject>(),
             Names2 = Array.Empty<object>(),
             Complex = new SampleComplexObject
@@ -52,4 +56,3 @@ var output =
         });
 
 Console.WriteLine(JsonConvert.SerializeObject(output));
-

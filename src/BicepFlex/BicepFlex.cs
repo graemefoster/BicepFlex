@@ -59,7 +59,7 @@ public class BicepFlex
 
 using BicepRunner;
 
-{(file.Directory == null ? "" : $"namespace {file.Directory.ToPascalCase().Replace(Path.DirectorySeparatorChar, '.')};")}
+{(string.IsNullOrWhiteSpace(file.Directory) ? "" : $"namespace {file.Directory.ToPascalCase().Replace(Path.DirectorySeparatorChar, '.')};")}
 
 {string.Join(Environment.NewLine, inputs.OfType<BicepEnumToken>().Select(et => $@"
 public class {et.DotNetTypeName()} : BicepOptions {{
