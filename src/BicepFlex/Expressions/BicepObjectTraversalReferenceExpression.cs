@@ -38,10 +38,12 @@ public class BicepObjectTraversalReferenceExpression : BicepReferenceExpression
     /// <returns></returns>
     public override bool InferType(IEnumerable<BicepToken> tokens, Assembly? referenceTypeAssembly)
     {
+        if (referenceTypeAssembly == null) return false;
+        
         if (base.InferType(tokens, referenceTypeAssembly))
         {
             //got a type - now walk the tree
-            var type = referenceTypeAssembly!.GetType(InferredType!);
+            var type = referenceTypeAssembly.GetType(InferredType!);
             if (type == null)
             {
                 Console.WriteLine($"WARNING:: Could not find type {InferredType} in Reference Type assembly:{referenceTypeAssembly.GetName().Name}");

@@ -9,7 +9,7 @@ using BicepRunner;
 
 
 
-public partial class TestModuleModule : BicepTemplate<TestModuleModule.TestModuleOutput> {
+public partial class TestModuleModule : BicepResourceGroupScopeTemplate<TestModuleModule.TestModuleOutput> {
     public override string FileName => "test-module.bicep";
     public override string FileHash => "/IF2TbPynB2BJnGCoyF8gfClqSupT7xbBSd2XkYjZJuePmpKzvJjmr4Bn6CmnN5Tvz5O6zUpfrghRIGATFHiIw==";
 

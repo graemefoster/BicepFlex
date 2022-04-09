@@ -15,33 +15,31 @@ public class AzBicepRunner : IBicepRunner
 {
     private readonly ArmClient _armClient;
     private readonly string _bicepRoot;
-    private readonly string _resourceGroup;
 
-    public AzBicepRunner(string resourceGroup, string bicepRoot)
+    public AzBicepRunner(string bicepRoot)
     {
-        _resourceGroup = resourceGroup;
         _bicepRoot = Path.GetFullPath(bicepRoot)!;
         _armClient = new ArmClient(new DefaultAzureCredential());
     }
 
-    public async Task<INextStep<TState>> ExecuteTemplate<T, TState>(BicepTemplate<T> template,
+    public async Task<INextStep<TState>> ExecuteTemplate<T, TState>(ExecutableTemplate<T> template,
         Func<T, TState> stateGenerator) where T : BicepOutput
     {
         return new AzNextStepRunner<TState>(stateGenerator(await ExecuteTemplateInternal(template)), this);
     }
 
-    public async Task<INextStep<T>> ExecuteTemplate<T>(BicepTemplate<T> template) where T : BicepOutput
+    public async Task<INextStep<T>> ExecuteTemplate<T>(ExecutableTemplate<T> template) where T : BicepOutput
     {
         return new AzNextStepRunner<T>(await ExecuteTemplateInternal(template), this);
     }
 
     public async Task<INextStep<Tuple<TState1, TState2, TState3>>> ExecuteTemplate<T1, T2, T3, TState1, TState2,
         TState3>(
-        BicepTemplate<T1> template1,
+        ExecutableTemplate<T1> template1,
         Func<T1, TState1> state1Generator,
-        BicepTemplate<T2> template2,
+        ExecutableTemplate<T2> template2,
         Func<T2, TState2> state2Generator,
-        BicepTemplate<T3> template3,
+        ExecutableTemplate<T3> template3,
         Func<T3, TState3> state3Generator
     )
         where T1 : BicepOutput
@@ -61,9 +59,9 @@ public class AzBicepRunner : IBicepRunner
     }
 
     public async Task<INextStep<Tuple<TState1, TState2>>> ExecuteTemplate<T1, T2, TState1, TState2>(
-        BicepTemplate<T1> template1,
+        ExecutableTemplate<T1> template1,
         Func<T1, TState1> state1Generator,
-        BicepTemplate<T2> template2,
+        ExecutableTemplate<T2> template2,
         Func<T2, TState2> state2Generator)
         where T1 : BicepOutput
         where T2 : BicepOutput
@@ -77,7 +75,8 @@ public class AzBicepRunner : IBicepRunner
         );
     }
 
-    private async Task<T> ExecuteTemplateInternal<T>(BicepTemplate<T> template) where T : BicepOutput
+    private async Task<T> ExecuteTemplateInternal<T>(ExecutableTemplate<T> template, string? deploymentName = null)
+        where T : BicepOutput
     {
         var buildParameters = template.BuildParameters();
 
@@ -99,16 +98,33 @@ public class AzBicepRunner : IBicepRunner
             var json = await File.ReadAllTextAsync(temp, Encoding.UTF8);
 
             var subscription = await _armClient.GetDefaultSubscriptionAsync();
-            var rg = await subscription.GetResourceGroups().GetIfExistsAsync(_resourceGroup);
-            if (rg.Value == null)
+            if (template.IsResourceGroup(out var _resourceGroup))
             {
-                await subscription.GetResourceGroups()
-                    .CreateOrUpdateAsync(_resourceGroup, new ResourceGroupData(Location.AustraliaEast));
-                rg = await subscription.GetResourceGroups().GetIfExistsAsync(_resourceGroup);
+                var rg = await subscription.GetResourceGroups().GetIfExistsAsync(_resourceGroup);
+                if (rg.Value == null)
+                {
+                    await subscription.GetResourceGroups()
+                        .CreateOrUpdateAsync(_resourceGroup, new ResourceGroupData(Location.AustraliaEast));
+                    rg = await subscription.GetResourceGroups().GetIfExistsAsync(_resourceGroup);
+                }
+
+                var deploymentTask = await rg.Value.GetDeployments().CreateOrUpdateAsync(
+                    deploymentName ?? $"bicep-flex-{DateTimeOffset.Now.ToUnixTimeSeconds()}",
+                    new DeploymentInput(new DeploymentProperties(DeploymentMode.Incremental)
+                    {
+                        Template = JsonDocument.Parse(json).RootElement,
+                        Parameters = JsonDocument.Parse(JsonConvert.SerializeObject(buildParameters,
+                            new JsonSerializerSettings
+                            {
+                                Converters = new[] { new StringEnumConverter() }
+                            })).RootElement
+                    }));
+
+                return template.BuildOutput((Dictionary<string, object>)deploymentTask.Value.Data.Properties.Outputs);
             }
 
-            var deploymentTask = await rg.Value.GetDeployments().CreateOrUpdateAsync(
-                "bicep-flex-test",
+            var subscriptionDeploymentTask = await subscription.GetDeployments().CreateOrUpdateAsync(
+                deploymentName ?? $"bicep-flex-{DateTimeOffset.Now.ToUnixTimeSeconds()}",
                 new DeploymentInput(new DeploymentProperties(DeploymentMode.Incremental)
                 {
                     Template = JsonDocument.Parse(json).RootElement,
@@ -119,7 +135,8 @@ public class AzBicepRunner : IBicepRunner
                         })).RootElement
                 }));
 
-            return template.BuildOutput((Dictionary<string, object>)deploymentTask.Value.Data.Properties.Outputs);
+            return template.BuildOutput(
+                (Dictionary<string, object>)subscriptionDeploymentTask.Value.Data.Properties.Outputs);
         }
         finally
 

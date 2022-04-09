@@ -15,7 +15,7 @@ public class SingleParamWeathertypeOptions : BicepOptions {
     public static readonly SingleParamWeathertypeOptions hail = new ("hail");
 }
 
-public partial class SingleParamModule : BicepTemplate<SingleParamModule.SingleParamOutput> {
+public partial class SingleParamModule : BicepResourceGroupScopeTemplate<SingleParamModule.SingleParamOutput> {
     public override string FileName => "single-param.bicep";
     public override string FileHash => "wiYzY1I4ws2TGeLFA8/M1KcNb+iGxRtLpfdWV9O+PAZXkyjrHsB6Ay4Ywe3V++cwsk7c71/PnK+qNM0QepjBTQ==";
 

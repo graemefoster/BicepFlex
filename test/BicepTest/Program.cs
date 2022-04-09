@@ -13,7 +13,6 @@ await bicepFlex.Process();
 
 
 var runner = new AzBicepRunner.AzBicepRunner(
-    "testy",
     @"./TestBicepFiles/");
 
 var stack = new Stack()
@@ -26,7 +25,7 @@ var stack = new Stack()
     Two = "HELLO"
 };
 
-var bicepFile = new SingleParamModule()
+var bicepFile = ExecutableTemplate.ResourceGroupScope("testy", new SingleParamModule()
 {
     Name = "Graeme",
     Complex = stack.ComplexOne,
@@ -37,12 +36,12 @@ var bicepFile = new SingleParamModule()
     },
     Names2 = Array.Empty<object>(),
     Weathertype = SingleParamWeathertypeOptions.hail
-};
+});
 
 var output =
     await runner
         .ExecuteTemplate(bicepFile)
-        .ThenDeploy(o => new SingleParamModule
+        .ThenDeploy(o => ExecutableTemplate.ResourceGroupScope("testy", new SingleParamModule
         {
             Name = o.Nameout,
             Weathertype = SingleParamWeathertypeOptions.hail,
@@ -53,6 +52,6 @@ var output =
                 Property1 = "ASASASs",
                 Property2 = 123
             }
-        });
+        }));
 
 Console.WriteLine(JsonConvert.SerializeObject(output.Output));

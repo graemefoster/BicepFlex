@@ -45,6 +45,7 @@ internal class BicepFileParser
 
             if (more)
             {
+                if (BicepScopeToken.TryParse(fileReader, out var scopeToken)) return scopeToken;
                 if (BicepParameterToken.TryParse(moduleName, fileReader, out var token)) return token;
                 if (BicepOutputToken.TryParse(fileReader, out var token2)) return token2;
                 if (BicepEnumToken.TryParse(moduleName, fileReader, out var token3)) return token3;
