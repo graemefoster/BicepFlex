@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using Azure.Core;
 using BicepRunner;
 using BicepTestTypes;
 using Newtonsoft.Json;
@@ -13,7 +14,7 @@ await bicepFlex.Process();
 
 
 var runner = new AzBicepRunner.AzBicepRunner(
-    @"./TestBicepFiles/");
+    @"./TestBicepFiles/", AzureLocation.AustraliaEast, Guid.Parse("8d2059f3-b805-41fa-ab84-e13d4dfec042"));
 
 var stack = new Stack()
 {

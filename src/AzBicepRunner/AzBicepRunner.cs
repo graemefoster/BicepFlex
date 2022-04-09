@@ -1,23 +1,27 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
+using Azure;
+using Azure.Core;
 using Azure.Identity;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
 using BicepRunner;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace AzBicepRunner;
 
 public class AzBicepRunner : IBicepRunner
 {
+    private readonly AzureLocation _location;
     private readonly ArmClient _armClient;
     private readonly string _bicepRoot;
+    private readonly string _subscriptionId;
+    private SubscriptionResource? _subscription;
 
-    public AzBicepRunner(string bicepRoot)
+    public AzBicepRunner(string bicepRoot, AzureLocation location, Guid subscriptionId)
     {
+        _location = location;
+        _subscriptionId = subscriptionId.ToString().ToLowerInvariant();
         _bicepRoot = Path.GetFullPath(bicepRoot)!;
         _armClient = new ArmClient(new DefaultAzureCredential());
     }
@@ -78,6 +82,8 @@ public class AzBicepRunner : IBicepRunner
     private async Task<T> ExecuteTemplateInternal<T>(ExecutableTemplate<T> template, string? deploymentName = null)
         where T : BicepOutput
     {
+        _subscription ??= (await _armClient.GetSubscriptions().GetAsync(_subscriptionId)).Value;
+
         var buildParameters = template.BuildParameters();
 
         var temp = Path.GetTempFileName();
@@ -97,46 +103,44 @@ public class AzBicepRunner : IBicepRunner
 
             var json = await File.ReadAllTextAsync(temp, Encoding.UTF8);
 
-            var subscription = await _armClient.GetDefaultSubscriptionAsync();
-            if (template.IsResourceGroup(out var _resourceGroup))
-            {
-                var rg = await subscription.GetResourceGroups().GetIfExistsAsync(_resourceGroup);
-                if (rg.Value == null)
+            ArmOperation<ArmDeploymentResource> deploymentTask;
+            var armDeploymentContent = new ArmDeploymentContent(
+                new ArmDeploymentProperties(ArmDeploymentMode.Incremental)
                 {
-                    await subscription.GetResourceGroups()
-                        .CreateOrUpdateAsync(_resourceGroup, new ResourceGroupData(Location.AustraliaEast));
-                    rg = await subscription.GetResourceGroups().GetIfExistsAsync(_resourceGroup);
+                    Template = BinaryData.FromString(json),
+                    Parameters = BinaryData.FromObjectAsJson(buildParameters)
+                });
+
+            if (template.IsResourceGroup(out var resourceGroup))
+            {
+                ResourceGroupResource? rg = null;
+                if (await _subscription.GetResourceGroups().ExistsAsync(resourceGroup))
+                {
+                    rg = (await _subscription.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed,
+                        resourceGroup,
+                        new ResourceGroupData(_location))).Value;
+                }
+                else
+                {
+                    rg = await _subscription.GetResourceGroups().GetAsync(resourceGroup);
                 }
 
-                var deploymentTask = await rg.Value.GetDeployments().CreateOrUpdateAsync(
+                deploymentTask = await rg.GetArmDeployments().CreateOrUpdateAsync(
+                    WaitUntil.Completed,
                     deploymentName ?? $"bicep-flex-{DateTimeOffset.Now.ToUnixTimeSeconds()}",
-                    new DeploymentInput(new DeploymentProperties(DeploymentMode.Incremental)
-                    {
-                        Template = JsonDocument.Parse(json).RootElement,
-                        Parameters = JsonDocument.Parse(JsonConvert.SerializeObject(buildParameters,
-                            new JsonSerializerSettings
-                            {
-                                Converters = new[] { new StringEnumConverter() }
-                            })).RootElement
-                    }));
-
-                return template.BuildOutput((Dictionary<string, object>)deploymentTask.Value.Data.Properties.Outputs);
+                    armDeploymentContent);
+            }
+            else
+            {
+                armDeploymentContent.Location = _location;
+                deploymentTask = await _subscription.GetArmDeployments().CreateOrUpdateAsync(
+                    WaitUntil.Completed,
+                    deploymentName ?? $"bicep-flex-{DateTimeOffset.Now.ToUnixTimeSeconds()}",
+                    armDeploymentContent);
             }
 
-            var subscriptionDeploymentTask = await subscription.GetDeployments().CreateOrUpdateAsync(
-                deploymentName ?? $"bicep-flex-{DateTimeOffset.Now.ToUnixTimeSeconds()}",
-                new DeploymentInput(new DeploymentProperties(DeploymentMode.Incremental)
-                {
-                    Template = JsonDocument.Parse(json).RootElement,
-                    Parameters = JsonDocument.Parse(JsonConvert.SerializeObject(buildParameters,
-                        new JsonSerializerSettings
-                        {
-                            Converters = new[] { new StringEnumConverter() }
-                        })).RootElement
-                }));
-
-            return template.BuildOutput(
-                (Dictionary<string, object>)subscriptionDeploymentTask.Value.Data.Properties.Outputs);
+            var output = deploymentTask.WaitForCompletionResponseAsync();
+            return template.BuildOutput(output.Result.Content.ToObjectFromJson<Dictionary<string, object>>());
         }
         finally
 
