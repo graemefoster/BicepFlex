@@ -41,10 +41,17 @@ public class BicepParameterToken : BicepToken
 
     public string DotNetTypeName()
     {
-        if (CustomType == null || CustomType == "array") return BicepType == "array" ? "System.Array" : BicepType;
-
+        if (CustomType == null || CustomType == "array")
+        {
+            return BicepType switch
+            {
+                "array" => "System.Array",
+                "resource" => "BicepResource",
+                _ => BicepType
+            };
+        }
+        
         if (BicepType == "array") return $"{CustomType}[]";
-
         return CustomType;
     }
 }
