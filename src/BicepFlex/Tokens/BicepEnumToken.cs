@@ -18,12 +18,17 @@ public class BicepEnumToken : BicepParameterToken
     {
         if (bicepValue == "default")
         {
-            return ("_default", bicepValue);
+            return ("__default", bicepValue);
+        }
+
+        if (bicepValue == "")
+        {
+            return ("__empty", bicepValue);
         }
 
         if (double.TryParse(bicepValue, out var val2))
         {
-            return ($"NUM_{bicepValue.Replace(".", "_")}", bicepValue);
+            return ($"__num_{bicepValue.Replace(".", "_")}", bicepValue);
         }
 
         return (bicepValue, bicepValue);

@@ -84,8 +84,8 @@ public class {et.DotNetTypeName()} : BicepOptions {{
 public partial class {pascalCaseName}Module : {baseClass}<{pascalCaseName}Module.{pascalCaseName}Output> {{
     public override string FileName => ""{file.FileName}"";
     public override string FileHash => ""{file.Hash}"";
-    public string[] References => new [] {{ { string.Join($",{Environment.NewLine}", file.References.Select(x => $"\"{x.ModulePath}\"").Distinct())} }}
-    public string[] ReferencedBy => new [] {{ { string.Join($",{Environment.NewLine}", file.ReferencedBy.Select(x => $"\"{x.FileName}\"").Distinct())} }}
+    public string[] References =>  new string [] {{ { string.Join($",{Environment.NewLine}", file.References.Select(x => $"\"{x.ModulePath}\"").Distinct())} }};
+    public string[] ReferencedBy => new string [] {{ { string.Join($",{Environment.NewLine}", file.ReferencedBy.Select(x => $"\"{x.FileName}\"").Distinct())} }};
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
     private {x.DotNetTypeName()} _{x.Name} = default!;
