@@ -106,7 +106,8 @@ public partial class {pascalCaseName}Module : {baseClass}<{pascalCaseName}Module
     public override Dictionary<string, object> BuildParameters() {{
         var dictionary = new Dictionary<string, object>();
 {string.Join(Environment.NewLine, inputs.OfType<BicepEnumToken>().Select(x => @$"        dictionary[""{x.Name}""] = new {{ value = this._{x.Name}.BicepValue}};"))}
-{string.Join(Environment.NewLine, inputs.Except(inputs.OfType<BicepEnumToken>()).Select(x => @$"        dictionary[""{x.Name}""] = new {{ value = this._{x.Name}}};"))}
+{string.Join(Environment.NewLine, inputs.Except(inputs.OfType<BicepEnumToken>()).Where(x => x.BicepType == "resource").Select(x => @$"        dictionary[""{x.Name}""] = new {{ value = this._{x.Name}.ResourceId}};"))}
+{string.Join(Environment.NewLine, inputs.Except(inputs.OfType<BicepEnumToken>()).Where(x => x.BicepType != "resource").Select(x => @$"        dictionary[""{x.Name}""] = new {{ value = this._{x.Name}}};"))}
         return dictionary;
     }} 
 
