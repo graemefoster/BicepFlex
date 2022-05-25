@@ -26,6 +26,13 @@ public class BicepFlex
         var allMetaFiles = await Task.WhenAll(Directory.GetFiles(_bicepRoot, "*.bicep", SearchOption.AllDirectories)
             .Select(async f => parse.Parse(Path.GetRelativePath(_bicepRoot, f), await File.ReadAllLinesAsync(f))));
 
+        //Add parents to the dependency tree
+        foreach (var file in allMetaFiles)
+        {
+            file.InferTree(_bicepRoot, allMetaFiles);
+        }
+
+        //Try to infer types
         var referenceTypeAssembly = _referenceTypesAssembly == null ? null : Assembly.LoadFile(_referenceTypesAssembly);
         var keepGoing = true;
         while (keepGoing)
@@ -77,6 +84,8 @@ public class {et.DotNetTypeName()} : BicepOptions {{
 public partial class {pascalCaseName}Module : {baseClass}<{pascalCaseName}Module.{pascalCaseName}Output> {{
     public override string FileName => ""{file.FileName}"";
     public override string FileHash => ""{file.Hash}"";
+    public string[] References => new [] {{ { string.Join($",{Environment.NewLine}", file.References.Select(x => $"\"{x.ModulePath}\"").Distinct())} }}
+    public string[] ReferencedBy => new [] {{ { string.Join($",{Environment.NewLine}", file.ReferencedBy.Select(x => $"\"{x.FileName}\"").Distinct())} }}
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
     private {x.DotNetTypeName()} _{x.Name} = default!;

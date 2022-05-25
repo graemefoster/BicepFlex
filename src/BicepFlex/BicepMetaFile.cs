@@ -11,6 +11,7 @@ public class BicepMetaFile
     public string Scope { get; }
 
     private readonly IEnumerable<BicepToken> _tokens;
+    private readonly HashSet<BicepMetaFile> _referencedBy = new();
 
     public BicepMetaFile(string? directory, string fileName, byte[] hash, IEnumerable<BicepToken?> tokens)
     {
@@ -22,7 +23,8 @@ public class BicepMetaFile
         Scope = tokens.OfType<BicepScopeToken>().SingleOrDefault()?.Scope ?? "resourceGroup";
     }
 
-    public IEnumerable<BicepMetaFile> References => Array.Empty<BicepMetaFile>();
+    public IEnumerable<BicepMetaFile> ReferencedBy => _referencedBy;
+    public IEnumerable<BicepModuleReferenceToken> References => _tokens.OfType<BicepModuleReferenceToken>();
     public IEnumerable<BicepParameterToken> Parameters => _tokens.OfType<BicepParameterToken>();
     public IEnumerable<BicepOutputToken> Outputs => _tokens.OfType<BicepOutputToken>();
     public string Hash { get; }
@@ -80,6 +82,23 @@ public class BicepMetaFile
                     parameterToken.CustomType = parameter.InferredType;
                 }
             }
+        }
+    }
+
+    private void ModuleReferencedBy(BicepMetaFile otherFile)
+    {
+        _referencedBy.Add(otherFile);
+    }
+
+    internal void InferTree(string rootPath, IEnumerable<BicepMetaFile> files)
+    {
+        foreach (var moduleReference in _tokens.OfType<BicepModuleReferenceToken>())
+        {
+            var fullpath = Path
+                .GetRelativePath(rootPath, Path.Combine(rootPath, moduleReference.RelativePathFromRoot))
+                .Replace(Path.DirectorySeparatorChar, '/');
+            var module = files.Single(x => x.FileName == fullpath);
+            module.ModuleReferencedBy(this);
         }
     }
 }
