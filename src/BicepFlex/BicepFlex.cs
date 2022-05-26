@@ -1,5 +1,5 @@
-using BicepFlex.Tokens;
 using BicepParser;
+using BicepParser.Tokens;
 
 namespace BicepFlex;
 
@@ -47,9 +47,8 @@ public class BicepFlex
 
         string GetTypeNameForReference(BicepModuleReferenceToken token)
         {
-            Console.WriteLine($"Looking for file {token.RelativePathFromRoot}");
-            var canonicalPath = Path.GetRelativePath(bicepRoot, Path.GetFullPath(token.RelativePathFromRoot, bicepRoot)).Replace(Path.DirectorySeparatorChar, '/');
-            var metaFile = allFiles.Single(x => x.FileName == canonicalPath);
+            Console.WriteLine($"Looking for file {token.ReferencedFileName}");
+            var metaFile = allFiles.Single(x => x.FileName == token.ReferencedFileName);
             return GetTypeNameForModule(metaFile);
         }
 

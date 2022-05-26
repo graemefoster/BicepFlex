@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using BicepFlex;
 
 namespace BicepParser;
 
@@ -20,7 +19,8 @@ public class BicepDirectoryTreeProcessor
         var parse = new BicepFileParser();
 
         var allMetaFiles = await Task.WhenAll(Directory.GetFiles(_bicepRoot, "*.bicep", SearchOption.AllDirectories)
-            .Select(async f => parse.Parse(Path.GetRelativePath(_bicepRoot, f), await File.ReadAllLinesAsync(f))));
+            .Select(async f =>
+                parse.Parse(_bicepRoot, Path.GetRelativePath(_bicepRoot, f), await File.ReadAllLinesAsync(f))));
 
         //Add parents to the dependency tree
         foreach (var file in allMetaFiles)
@@ -45,5 +45,4 @@ public class BicepDirectoryTreeProcessor
 
         return allMetaFiles;
     }
-    
 }

@@ -1,33 +1,47 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace BicepFlex.Tokens;
+namespace BicepParser.Tokens;
 
 public class BicepModuleReferenceToken : BicepToken
 {
     private static readonly Regex regex = new(@"^\s*module\s+([A-Za-z0-9_]*)\s+\'([A-Za-z0-9_\.\/\-]*)\'");
     private static readonly Regex referenceRegex = new(@"^\s+([A-Za-z0-9_]*)\s*\:\s*([A-Za-z0-9_]*)\s*$");
 
-    private BicepModuleReferenceToken(string variableName, string modulePath, string? referenceDirectory, List<(string, string)> parameters)
+    private BicepModuleReferenceToken(string bicepRoot, string variableName, string modulePath,
+        string? referenceDirectory, List<(string, string)> parameters)
     {
         VariableName = variableName;
-        ModulePath = modulePath;
-        ReferenceDirectory = referenceDirectory;
+        ReferenceDirectory = referenceDirectory?.Replace(Path.DirectorySeparatorChar, '/');
+        ReferencedFileName = Path.GetRelativePath(
+                bicepRoot,
+                Path.GetFullPath(
+                    Path.Combine(referenceDirectory ?? string.Empty, modulePath),
+                    bicepRoot))
+            .Replace(Path.DirectorySeparatorChar, '/');
         Parameters = parameters.Select(x => new ModuleParameter(x.Item1, x.Item2))
             .ToArray();
     }
 
     public string VariableName { get; }
-    public string ModulePath { get; }
+
+    /// <summary>
+    /// Directory of the template where this reference comes from
+    /// </summary>
     private string? ReferenceDirectory { get; }
 
-    public string RelativePathFromRoot => ReferenceDirectory == null ? 
-        ModulePath : 
-        Path.Combine(ReferenceDirectory, ModulePath).Replace(Path.DirectorySeparatorChar, '/');
-    
+    /// <summary>
+    /// Relative path of the referenced file from the root directory  
+    /// </summary>
+    public string ReferencedFileName { get; }
+
     public ModuleParameter[] Parameters { get; }
 
-    public static bool TryParse(IEnumerator<string> reader, string currentDirectory, out BicepModuleReferenceToken? token)
+    public static bool TryParse(
+        IEnumerator<string> reader,
+        string rootDirectory,
+        string currentDirectory,
+        out BicepModuleReferenceToken? token)
     {
         var line = reader.Current;
         var match = regex.Match(line);
@@ -53,7 +67,7 @@ public class BicepModuleReferenceToken : BicepToken
                 throw new InvalidOperationException(
                     $"Failed to parse module. Finished with {openParenthesis} open curly brackets");
 
-            token = new BicepModuleReferenceToken(moduleName, modulePath, currentDirectory, parameters);
+            token = new BicepModuleReferenceToken(rootDirectory, moduleName, modulePath, currentDirectory, parameters);
             return true;
         }
 

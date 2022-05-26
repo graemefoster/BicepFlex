@@ -1,7 +1,7 @@
 using System.Reflection;
-using BicepFlex.Tokens;
+using BicepParser.Tokens;
 
-namespace BicepFlex;
+namespace BicepParser;
 
 public class BicepMetaFile
 {
@@ -44,7 +44,7 @@ public class BicepMetaFile
             if (moduleReference.InferType(_tokens, referenceTypeAssembly))
             {
                 var fullpath = Path
-                    .GetRelativePath(rootPath, Path.Combine(rootPath, moduleReference.RelativePathFromRoot))
+                    .GetRelativePath(rootPath, Path.Combine(rootPath, moduleReference.ReferencedFileName))
                     .Replace(Path.DirectorySeparatorChar, '/');
                 var module = files.Single(x => x.FileName == fullpath);
                 module.InferTypes(moduleReference);
@@ -71,7 +71,7 @@ public class BicepMetaFile
                 if (parameterToken == null)
                 {
                     Console.WriteLine(
-                        $"WARNING: parameter {parameter.Name} passed from {referencingBicepFile.RelativePathFromRoot} cannot be found in: {this.FileName}");
+                        $"WARNING: parameter {parameter.Name} passed from {referencingBicepFile.ReferencedFileName} cannot be found in: {this.FileName}");
                     return;
                 }
 
@@ -95,7 +95,7 @@ public class BicepMetaFile
         foreach (var moduleReference in _tokens.OfType<BicepModuleReferenceToken>())
         {
             var fullpath = Path
-                .GetRelativePath(rootPath, Path.Combine(rootPath, moduleReference.RelativePathFromRoot))
+                .GetRelativePath(rootPath, Path.Combine(rootPath, moduleReference.ReferencedFileName))
                 .Replace(Path.DirectorySeparatorChar, '/');
             var module = files.Single(x => x.FileName == fullpath);
             module.ModuleReferencedBy(this);

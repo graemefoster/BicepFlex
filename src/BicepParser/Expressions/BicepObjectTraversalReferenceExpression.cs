@@ -1,8 +1,8 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
-using BicepFlex.Tokens;
+using BicepParser.Tokens;
 
-namespace BicepFlex.Expressions;
+namespace BicepParser.Expressions;
 
 public class BicepObjectTraversalReferenceExpression : BicepReferenceExpression
 {

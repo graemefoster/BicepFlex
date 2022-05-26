@@ -1,7 +1,7 @@
 using System.Reflection;
-using BicepFlex.Expressions;
+using BicepParser.Expressions;
 
-namespace BicepFlex.Tokens;
+namespace BicepParser.Tokens;
 
 public class ModuleParameter
 {

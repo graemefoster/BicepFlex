@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 using System.Text;
-using BicepFlex.Tokens;
+using BicepParser.Tokens;
 
-namespace BicepFlex;
+namespace BicepParser;
 
 internal class BicepFileParser
 {
-    public BicepMetaFile Parse(string fileName, string[] fileContents)
+    public BicepMetaFile Parse(string rootDirectory, string fileName, string[] fileContents)
     {
         var directory = Path.GetDirectoryName(fileName);
         var moduleName = Path.GetFileNameWithoutExtension(fileName);
@@ -17,23 +17,23 @@ internal class BicepFileParser
             SHA512.Create().ComputeHash(
                 Encoding.UTF8.GetBytes(
                     string.Join("\r\n", fileContents))),
-            GetTokens(fileContents.AsEnumerable(), directory!, moduleName));
+            GetTokens(fileContents.AsEnumerable(), rootDirectory, directory!, moduleName));
     }
 
-    private IEnumerable<BicepToken> GetTokens(IEnumerable<string> lines, string directory, string moduleName)
+    private IEnumerable<BicepToken> GetTokens(IEnumerable<string> lines, string rootDirectory, string directory, string moduleName)
     {
         var tokens = new List<BicepToken>();
         using var enumerator = lines.GetEnumerator();
         while (enumerator.MoveNext())
         {
-            var token = NextToken(enumerator, directory, moduleName);
+            var token = NextToken(enumerator, rootDirectory, directory, moduleName);
             if (token != null) tokens.Add(token);
         }
 
         return tokens;
     }
 
-    private BicepToken? NextToken(IEnumerator<string> fileReader, string directory, string moduleName)
+    private BicepToken? NextToken(IEnumerator<string> fileReader, string rootDirectory, string directory, string moduleName)
     {
         bool more = true;
         do
@@ -50,7 +50,7 @@ internal class BicepFileParser
                 if (BicepOutputToken.TryParse(fileReader, out var token2)) return token2;
                 if (BicepEnumToken.TryParse(moduleName, fileReader, out var token3)) return token3;
                 if (BicepVariableToken.TryParse(fileReader, out var token4)) return token4;
-                if (BicepModuleReferenceToken.TryParse(fileReader, directory, out var token5)) return token5;
+                if (BicepModuleReferenceToken.TryParse(fileReader, rootDirectory, directory, out var token5)) return token5;
                 more = fileReader.MoveNext();
             }
             

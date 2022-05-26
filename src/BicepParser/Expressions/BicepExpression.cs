@@ -1,7 +1,7 @@
 using System.Reflection;
-using BicepFlex.Tokens;
+using BicepParser.Tokens;
 
-namespace BicepFlex.Expressions;
+namespace BicepParser.Expressions;
 
 public abstract class BicepExpression
 {

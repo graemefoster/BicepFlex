@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace BicepFlex;
+namespace BicepParser;
 
 public static class StringEx
 {
