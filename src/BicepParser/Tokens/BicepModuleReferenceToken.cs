@@ -21,7 +21,10 @@ public class BicepModuleReferenceToken : BicepToken
     public string ModulePath { get; }
     private string? ReferenceDirectory { get; }
 
-    public string RelativePathFromRoot => ReferenceDirectory == null ? ModulePath : Path.Combine(ReferenceDirectory, ModulePath);
+    public string RelativePathFromRoot => ReferenceDirectory == null ? 
+        ModulePath : 
+        Path.Combine(ReferenceDirectory, ModulePath).Replace(Path.DirectorySeparatorChar, '/');
+    
     public ModuleParameter[] Parameters { get; }
 
     public static bool TryParse(IEnumerator<string> reader, string currentDirectory, out BicepModuleReferenceToken? token)

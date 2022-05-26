@@ -1,7 +1,5 @@
-using System.Data;
-using System.Reflection;
 using BicepFlex.Tokens;
-using BicepRunner;
+using BicepParser;
 
 namespace BicepFlex;
 
@@ -20,47 +18,43 @@ public class BicepFlex
 
     public async Task Process()
     {
+        var output = new BicepDirectoryTreeProcessor(_bicepRoot, _referenceTypesAssembly);
+        var allMetaFiles = await output.Process();
         var classes = new List<(string filename, string contents)>();
-        var parse = new BicepFileParser();
-
-        var allMetaFiles = await Task.WhenAll(Directory.GetFiles(_bicepRoot, "*.bicep", SearchOption.AllDirectories)
-            .Select(async f => parse.Parse(Path.GetRelativePath(_bicepRoot, f), await File.ReadAllLinesAsync(f))));
-
-        //Add parents to the dependency tree
-        foreach (var file in allMetaFiles)
-        {
-            file.InferTree(_bicepRoot, allMetaFiles);
-        }
-
-        //Try to infer types
-        var referenceTypeAssembly = _referenceTypesAssembly == null ? null : Assembly.LoadFile(_referenceTypesAssembly);
-        var keepGoing = true;
-        while (keepGoing)
-        {
-            var madeInferences = false;
-            foreach (var file in allMetaFiles)
-            {
-                if (file.InferTypes(_bicepRoot, allMetaFiles, referenceTypeAssembly)) madeInferences = true;
-            }
-
-            //If we made some inferences, do another pass to see if we can make some more
-            keepGoing = madeInferences;
-        }
 
         foreach (var file in allMetaFiles)
         {
-            classes.Add(($"{file.FileName.ToPascalCase()}.cs", GenerateBicepClass(file)));
+            classes.Add(($"{file.FileName.ToPascalCase()}.cs", GenerateBicepClass(_bicepRoot, allMetaFiles, file)));
         }
 
         await WriteCsFiles(classes.ToArray(), _bicepOutputPath);
     }
 
-    static string GenerateBicepClass(BicepMetaFile file)
+    static string GenerateBicepClass(string bicepRoot, IEnumerable<BicepMetaFile> allFiles, BicepMetaFile file)
     {
         var inputs = file.Parameters;
         var outputs = file.Outputs;
 
-        var pascalCaseName = Path.GetFileNameWithoutExtension(file.FileName).ToPascalCase();
+        string GetNamespace(BicepMetaFile metaFile)
+        {
+            return metaFile.Directory!.ToPascalCase().Replace(Path.DirectorySeparatorChar, '.');
+        }
+        
+        string GetTypeNameForModule(BicepMetaFile metaFile)
+        {
+            return $"{GetNamespace(metaFile)}.{Path.GetFileNameWithoutExtension(metaFile.FileName).ToPascalCase()}Module";
+        }
+
+        string GetTypeNameForReference(BicepModuleReferenceToken token)
+        {
+            Console.WriteLine($"Looking for file {token.RelativePathFromRoot}");
+            var canonicalPath = Path.GetRelativePath(bicepRoot, Path.GetFullPath(token.RelativePathFromRoot, bicepRoot)).Replace(Path.DirectorySeparatorChar, '/');
+            var metaFile = allFiles.Single(x => x.FileName == canonicalPath);
+            return GetTypeNameForModule(metaFile);
+        }
+
+        var pascalCaseName =  Path.GetFileNameWithoutExtension(file.FileName).ToPascalCase();
+        
         var baseClass = file.Scope == "resourceGroup"
             ? "BicepResourceGroupScopeTemplate"
             : "BicepSubscriptionScopeTemplate";
@@ -72,7 +66,7 @@ public class BicepFlex
 
 using BicepRunner;
 
-{(string.IsNullOrWhiteSpace(file.Directory) ? "" : $"namespace {file.Directory.ToPascalCase().Replace(Path.DirectorySeparatorChar, '.')};")}
+{(string.IsNullOrWhiteSpace(file.Directory) ? "" : $"namespace {GetNamespace(file)};")}
 
 {string.Join(Environment.NewLine, inputs.OfType<BicepEnumToken>().Select(et => $@"
 public class {et.DotNetTypeName()} : BicepOptions {{
@@ -84,8 +78,8 @@ public class {et.DotNetTypeName()} : BicepOptions {{
 public partial class {pascalCaseName}Module : {baseClass}<{pascalCaseName}Module.{pascalCaseName}Output> {{
     public override string FileName => ""{file.FileName}"";
     public override string FileHash => ""{file.Hash}"";
-    public string[] References =>  new string [] {{ { string.Join($",{Environment.NewLine}", file.References.Select(x => $"\"{x.ModulePath}\"").Distinct())} }};
-    public string[] ReferencedBy => new string [] {{ { string.Join($",{Environment.NewLine}", file.ReferencedBy.Select(x => $"\"{x.FileName}\"").Distinct())} }};
+    public override Type[] References =>  new Type [] {{ { string.Join($",{Environment.NewLine}", file.References.Select(x => $"typeof({GetTypeNameForReference(x)})").Distinct())} }};
+    public override Type[] ReferencedBy => new Type [] {{ { string.Join($",{Environment.NewLine}", file.ReferencedBy.Select(x => $"typeof({GetTypeNameForModule(x)})").Distinct())} }};
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
     private {x.DotNetTypeName()} _{x.Name} = default!;
