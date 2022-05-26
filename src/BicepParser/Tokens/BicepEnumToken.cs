@@ -57,7 +57,7 @@ public class BicepEnumToken : BicepParameterToken
             }
             else
             {
-                throw new InvalidOperationException("Failed to read enum");
+                throw new InvalidOperationException($"Failed to read enum. Current line: {line}");
             }
 
             reader.MoveNext();
@@ -72,7 +72,7 @@ public class BicepEnumToken : BicepParameterToken
             }
 
             //Shouldn't happen
-            throw new InvalidOperationException("Detected parameter token but failed to read");
+            throw new InvalidOperationException($"Detected parameter token but failed to read: {line}");
         }
 
         token = null;

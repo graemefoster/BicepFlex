@@ -13,12 +13,12 @@ public class BicepModuleReferenceToken : BicepToken
     {
         VariableName = variableName;
         ReferenceDirectory = referenceDirectory?.Replace(Path.DirectorySeparatorChar, '/');
+        var relativePathOfModuleFromRoot = Path.Combine(referenceDirectory ?? string.Empty, modulePath).Replace(Path.DirectorySeparatorChar, '/');;
         ReferencedFileName = Path.GetRelativePath(
-                bicepRoot,
-                Path.GetFullPath(
-                    Path.Combine(referenceDirectory ?? string.Empty, modulePath),
-                    bicepRoot))
+                bicepRoot, 
+                Path.GetFullPath(relativePathOfModuleFromRoot, bicepRoot))
             .Replace(Path.DirectorySeparatorChar, '/');
+        
         Parameters = parameters.Select(x => new ModuleParameter(x.Item1, x.Item2))
             .ToArray();
     }

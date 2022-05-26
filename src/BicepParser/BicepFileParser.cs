@@ -10,7 +10,7 @@ internal class BicepFileParser
     {
         var directory = Path.GetDirectoryName(fileName);
         var moduleName = Path.GetFileNameWithoutExtension(fileName);
-        
+
         return new BicepMetaFile(
             directory,
             fileName,
@@ -20,7 +20,8 @@ internal class BicepFileParser
             GetTokens(fileContents.AsEnumerable(), rootDirectory, directory!, moduleName));
     }
 
-    private IEnumerable<BicepToken> GetTokens(IEnumerable<string> lines, string rootDirectory, string directory, string moduleName)
+    private IEnumerable<BicepToken> GetTokens(IEnumerable<string> lines, string rootDirectory, string directory,
+        string moduleName)
     {
         var tokens = new List<BicepToken>();
         using var enumerator = lines.GetEnumerator();
@@ -33,30 +34,42 @@ internal class BicepFileParser
         return tokens;
     }
 
-    private BicepToken? NextToken(IEnumerator<string> fileReader, string rootDirectory, string directory, string moduleName)
+    private BicepToken? NextToken(IEnumerator<string> fileReader, string rootDirectory, string directory,
+        string moduleName)
     {
-        bool more = true;
+        bool more;
         do
         {
             //Ignore description tokens / comments
-            if (BicepDescriptionToken.TryParse(fileReader)) more = fileReader.MoveNext();
-            if (more && BicepCommentToken.TryParse(fileReader)) more = fileReader.MoveNext();
-            if (more && BicepEmptyLineToken.TryParse(fileReader)) more = fileReader.MoveNext();
-
-            if (more)
+            if (BicepDescriptionToken.TryParse(fileReader))
             {
-                if (BicepScopeToken.TryParse(fileReader, out var scopeToken)) return scopeToken;
-                if (BicepParameterToken.TryParse(moduleName, fileReader, out var token)) return token;
-                if (BicepOutputToken.TryParse(fileReader, out var token2)) return token2;
-                if (BicepEnumToken.TryParse(moduleName, fileReader, out var token3)) return token3;
-                if (BicepVariableToken.TryParse(fileReader, out var token4)) return token4;
-                if (BicepModuleReferenceToken.TryParse(fileReader, rootDirectory, directory, out var token5)) return token5;
                 more = fileReader.MoveNext();
+                continue;
             }
+
+            if (BicepCommentToken.TryParse(fileReader))
+            {
+                more = fileReader.MoveNext();
+                continue;
+            }
+
+            if (BicepEmptyLineToken.TryParse(fileReader))
+            {
+                more = fileReader.MoveNext();
+                continue;
+            }
+
+            if (BicepScopeToken.TryParse(fileReader, out var scopeToken)) return scopeToken;
+            if (BicepParameterToken.TryParse(moduleName, fileReader, out var token)) return token;
+            if (BicepOutputToken.TryParse(fileReader, out var token2)) return token2;
+            if (BicepEnumToken.TryParse(moduleName, fileReader, out var token3)) return token3;
+            if (BicepVariableToken.TryParse(fileReader, out var token4)) return token4;
+            if (BicepModuleReferenceToken.TryParse(fileReader, rootDirectory, directory, out var token5)) return token5;
+
+            more = fileReader.MoveNext();
             
         } while (more);
 
         return null;
     }
-    
 }
