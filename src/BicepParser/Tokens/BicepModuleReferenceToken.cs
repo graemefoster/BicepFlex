@@ -7,18 +7,21 @@ public class BicepModuleReferenceToken : BicepToken
 {
     private static readonly Regex regex = new(@"^\s*module\s+([A-Za-z0-9_]*)\s+\'([A-Za-z0-9_\.\/\-]*)\'");
     private static readonly Regex referenceRegex = new(@"^\s+([A-Za-z0-9_]*)\s*\:\s*([A-Za-z0-9_]*)\s*$");
+    private static readonly Regex nameRegex = new(@"^\s+name\s*\:\s*(.*)\s*$");
 
     private BicepModuleReferenceToken(string bicepRoot, string variableName, string modulePath,
         string? referenceDirectory, List<(string, string)> parameters)
     {
         VariableName = variableName;
         ReferenceDirectory = referenceDirectory?.Replace(Path.DirectorySeparatorChar, '/');
-        var relativePathOfModuleFromRoot = Path.Combine(referenceDirectory ?? string.Empty, modulePath).Replace(Path.DirectorySeparatorChar, '/');;
+        var relativePathOfModuleFromRoot = Path.Combine(referenceDirectory ?? string.Empty, modulePath)
+            .Replace(Path.DirectorySeparatorChar, '/');
+        ;
         ReferencedFileName = Path.GetRelativePath(
-                bicepRoot, 
+                bicepRoot,
                 Path.GetFullPath(relativePathOfModuleFromRoot, bicepRoot))
             .Replace(Path.DirectorySeparatorChar, '/');
-        
+
         Parameters = parameters.Select(x => new ModuleParameter(x.Item1, x.Item2))
             .ToArray();
     }
@@ -58,9 +61,27 @@ public class BicepModuleReferenceToken : BicepToken
                 var moduleLine = reader.Current;
                 if (moduleLine.Contains('{')) openParenthesis++;
                 if (moduleLine.Contains('}')) openParenthesis--;
-                var referenceMatch = referenceRegex.Match(moduleLine);
-                if (referenceMatch.Success)
-                    parameters.Add((referenceMatch.Groups[1].Value, referenceMatch.Groups[2].Value));
+
+                var nameMatch = nameRegex.Match(moduleLine);
+                if (nameMatch.Success)
+                {
+                    //found the name of the deployment. Grab this as 'special!'
+                    NameParameter = nameMatch.Groups[1].Value;
+                }
+                else
+                {
+                    var referenceMatch = referenceRegex.Match(moduleLine);
+                    if (referenceMatch.Success)
+                    {
+                        if (openParenthesis == 1 && referenceMatch.Groups[1].Value == "name")
+                        {
+                            //found the name of the deployment. Grab this as 'special!'
+                            NameParameter = referenceMatch.Groups[2].Value;
+                        }
+
+                        parameters.Add((referenceMatch.Groups[1].Value, referenceMatch.Groups[2].Value));
+                    }
+                }
             }
 
             if (openParenthesis != 0)
@@ -74,6 +95,8 @@ public class BicepModuleReferenceToken : BicepToken
         token = null;
         return false;
     }
+
+    public static string NameParameter { get; private set; }
 
     /// <summary>
     /// See if anyone else can tell us what types these are?
