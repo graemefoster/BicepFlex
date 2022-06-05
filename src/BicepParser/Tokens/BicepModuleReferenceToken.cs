@@ -10,7 +10,7 @@ public class BicepModuleReferenceToken : BicepToken
     private static readonly Regex nameRegex = new(@"^\s+name\s*\:\s*(.*)\s*$");
 
     private BicepModuleReferenceToken(string bicepRoot, string variableName, string modulePath,
-        string? referenceDirectory, List<(string, string)> parameters)
+        string? referenceDirectory, string? nameParameter, List<(string, string)> parameters)
     {
         VariableName = variableName;
         ReferenceDirectory = referenceDirectory?.Replace(Path.DirectorySeparatorChar, '/');
@@ -24,6 +24,8 @@ public class BicepModuleReferenceToken : BicepToken
 
         Parameters = parameters.Select(x => new ModuleParameter(x.Item1, x.Item2))
             .ToArray();
+
+        NameParameter = nameParameter;
     }
 
     public string VariableName { get; }
@@ -52,6 +54,7 @@ public class BicepModuleReferenceToken : BicepToken
         {
             var moduleName = match.Groups[1].Value;
             var modulePath = match.Groups[2].Value;
+            var nameParameter = default(string);
 
             //look for variables and parameters going in:
             var openParenthesis = line.Contains('{') ? 1 : 0;
@@ -63,10 +66,10 @@ public class BicepModuleReferenceToken : BicepToken
                 if (moduleLine.Contains('}')) openParenthesis--;
 
                 var nameMatch = nameRegex.Match(moduleLine);
-                if (nameMatch.Success)
+                if (nameMatch.Success && openParenthesis == 1)
                 {
                     //found the name of the deployment. Grab this as 'special!'
-                    NameParameter = nameMatch.Groups[1].Value;
+                    nameParameter = nameMatch.Groups[1].Value;
                 }
                 else
                 {
@@ -76,7 +79,7 @@ public class BicepModuleReferenceToken : BicepToken
                         if (openParenthesis == 1 && referenceMatch.Groups[1].Value == "name")
                         {
                             //found the name of the deployment. Grab this as 'special!'
-                            NameParameter = referenceMatch.Groups[2].Value;
+                            nameParameter = referenceMatch.Groups[2].Value;
                         }
 
                         parameters.Add((referenceMatch.Groups[1].Value, referenceMatch.Groups[2].Value));
@@ -88,7 +91,7 @@ public class BicepModuleReferenceToken : BicepToken
                 throw new InvalidOperationException(
                     $"Failed to parse module. Finished with {openParenthesis} open curly brackets");
 
-            token = new BicepModuleReferenceToken(rootDirectory, moduleName, modulePath, currentDirectory, parameters);
+            token = new BicepModuleReferenceToken(rootDirectory, moduleName, modulePath, currentDirectory, nameParameter, parameters);
             return true;
         }
 
@@ -96,7 +99,7 @@ public class BicepModuleReferenceToken : BicepToken
         return false;
     }
 
-    public static string NameParameter { get; private set; }
+    public string? NameParameter { get; private set; }
 
     /// <summary>
     /// See if anyone else can tell us what types these are?

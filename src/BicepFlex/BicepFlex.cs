@@ -77,8 +77,8 @@ public class {et.DotNetTypeName()} : BicepOptions {{
 public partial class {pascalCaseName}Module : {baseClass}<{pascalCaseName}Module.{pascalCaseName}Output> {{
     public override string FileName => ""{file.FileName}"";
     public override string FileHash => ""{file.Hash}"";
-    public override Type[] References =>  new Type [] {{ { string.Join($",{Environment.NewLine}", file.References.Select(x => $"typeof({GetTypeNameForReference(x)})").Distinct())} }};
-    public override Type[] ReferencedBy => new Type [] {{ { string.Join($",{Environment.NewLine}", file.ReferencedBy.Select(x => $"typeof({GetTypeNameForModule(x)})").Distinct())} }};
+    public override (Type, string)[] References =>  new (Type, string)[] {{ { string.Join($",{Environment.NewLine}", file.References.Select(x => $"(typeof({GetTypeNameForReference(x)}), \"{x.NameParameter ?? string.Empty}\")").Distinct())} }};
+    public override Type[] ReferencedBy => new Type[] {{ { string.Join($",{Environment.NewLine}", file.ReferencedBy.Select(x => $"typeof({GetTypeNameForModule(x)})").Distinct())} }};
 
 {string.Join(Environment.NewLine, inputs.Select(x => @$"
     private {x.DotNetTypeName()} _{x.Name} = default!;

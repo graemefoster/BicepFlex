@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Diagnostics;
 using System.Text;
 using BicepParser;
 
@@ -11,26 +12,35 @@ using BicepParser;
 // var entry = result.Item1;
 // var files = result.Item2;
 
-var files = await new BicepDirectoryTreeProcessor(args[0]).Process();
-var entry = files.Single(x => x.FileName == "stack/environment/main.bicep");
+var files = (await new BicepDirectoryTreeProcessor(args[0]).Process()).Where(x => !x.FileName.StartsWith("es/"));
 
-var diGraph = $@"
-digraph ""{entry.FileName}"" {{
-{Recurse(files, entry)}
-}}
-";
-
-Console.WriteLine(diGraph);
-
-string Recurse(BicepMetaFile[] allFiles, BicepMetaFile template)
+foreach (var file in files)
 {
-    var sb = new StringBuilder();
-    foreach (var child in template.References)
+    Console.WriteLine(file.FileName);
+    foreach (var mod in file.References)
     {
-        var childFile = allFiles.Single(x => x.FileName == child.ReferencedFileName);
-        sb.AppendLine($"\"{template.FileName}\" -> \"{childFile.FileName}\"");
-        sb.Append(Recurse(allFiles, childFile));
+        Console.WriteLine($"--- {mod.VariableName}: name={mod.NameParameter}");
     }
-
-    return sb.ToString();
 }
+
+//
+// var diGraph = $@"
+// digraph ""{entry.FileName}"" {{
+// {Recurse(files, entry)}
+// }}
+// ";
+//
+// Console.WriteLine(diGraph);
+//
+// string Recurse(BicepMetaFile[] allFiles, BicepMetaFile template)
+// {
+//     var sb = new StringBuilder();
+//     foreach (var child in template.References)
+//     {
+//         var childFile = allFiles.Single(x => x.FileName == child.ReferencedFileName);
+//         sb.AppendLine($"\"{template.FileName}\" -> \"{childFile.FileName}\"");
+//         sb.Append(Recurse(allFiles, childFile));
+//     }
+//
+//     return sb.ToString();
+// }
